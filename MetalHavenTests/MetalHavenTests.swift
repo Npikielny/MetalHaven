@@ -25,6 +25,14 @@ final class MetalHavenTests: XCTestCase {
         // Mark your test throws to produce an unexpected failure when your test encounters an uncaught error.
         // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
     }
+    
+    func testSampling() throws {
+        let ptr = UnsafeMutablePointer<Sampler>.allocate(capacity: 1)
+        ptr.pointee = Sampler(seed: 3, uses: 1)
+        let sampled = sampleUniformDisk(ptr)
+        print(sampled)
+        assert(uniformDiskPdf(sampled) > 0)
+    }
 
     func testPerformanceExample() throws {
         // This is an example of a performance test case.

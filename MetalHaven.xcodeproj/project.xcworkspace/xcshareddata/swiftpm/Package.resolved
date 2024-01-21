@@ -1,0 +1,32 @@
+{
+  "pins" : [
+    {
+      "identity" : "exposables",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Npikielny/Exposables.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "f4085de48c1e7050f261acb216d19b63827beffc"
+      }
+    },
+    {
+      "identity" : "metalabstract",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Npikielny/MetalAbstract.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "61f874368d534e41403cf8b06a1c39c4ac55484c"
+      }
+    },
+    {
+      "identity" : "swift-syntax",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-syntax.git",
+      "state" : {
+        "revision" : "43c802fb7f96e090dde015344a94b5e85779eff1",
+        "version" : "509.1.0"
+      }
+    }
+  ],
+  "version" : 2
+}
