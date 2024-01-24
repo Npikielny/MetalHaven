@@ -50,7 +50,7 @@ Frame newFrame(vector_float3 up, vector_float3 forward, vector_float3 right);
 
 Frame newShadingFrame(vector_float3 normal, vector_float3 ray);
 
-vector_float3 toFrame(vector_float3 v, Frame frame);
+vector_float3 toWorld(vector_float3 v, Frame frame);
 
 //{
 //    v.x * frame.right + v.y * frame.up + v.z * frame.forward

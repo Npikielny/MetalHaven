@@ -130,6 +130,7 @@
 		306E147B2B5B452F002F6063 /* PathTracing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PathTracing.h; sourceTree = "<group>"; };
 		306E147D2B5D9CEF002F6063 /* Bidirectional.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bidirectional.swift; sourceTree = "<group>"; };
 		306E147F2B5D9D82002F6063 /* Bidirectional.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Bidirectional.metal; sourceTree = "<group>"; };
+		306E14812B5DB69C002F6063 /* SampleMat.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = SampleMat.hpp; sourceTree = "<group>"; };
 		30705D322B4FC9E500F1604B /* Lighting.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Lighting.metal; sourceTree = "<group>"; };
 		309201C72B54B72C0099D34F /* PathMis.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathMis.swift; sourceTree = "<group>"; };
 		309201C92B54B80E0099D34F /* PathMis.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = PathMis.metal; sourceTree = "<group>"; };
@@ -267,6 +268,7 @@
 			children = (
 				301B375B2ADDD436003EE9FC /* PathMats.swift */,
 				301B375D2ADDD5B2003EE9FC /* PathMats.metal */,
+				306E14812B5DB69C002F6063 /* SampleMat.hpp */,
 			);
 			path = PathMats;
 			sourceTree = "<group>";

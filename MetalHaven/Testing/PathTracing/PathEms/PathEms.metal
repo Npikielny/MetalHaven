@@ -56,9 +56,12 @@ void pathEms(uint tid [[thread_position_in_grid]],
         
         ray.direction = normalize(l - ray.origin);
 
-        ray.throughput *= totalArea * abs(dot(ray.direction, primaryBounce.n) * abs(dot(-ray.direction, n)));
+        ray.throughput *= totalArea * abs(dot(ray.direction, primaryBounce.n) * max(0.f, -dot(ray.direction, n)));
         
         Intersection shadow = trace(ray, scene, types, objectCount);
+        
+//        bool isValid = dot(-ray.direction, shadow.n) * dot(n, out) > 0;
+        
         if (abs(shadow.t - distance(l, ray.origin)) < 1e-4) {
             ray.result += ray.throughput / (shadow.t * shadow.t) * getEmission(matTypes[shadow.materialId], materials);
         }

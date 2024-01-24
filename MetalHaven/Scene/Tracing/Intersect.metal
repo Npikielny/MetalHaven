@@ -14,7 +14,7 @@ Intersection sphereIntersection(Ray ray, Sphere sphere) {
     float3 p = ray.origin + ray.direction * t;
     float3 n = normalize(p - sphere.position);
     
-    Frame f = newFrame(vector_float3(0, 1, 0), vector_float3(0, 0, 1), vector_float3(1, 0, 0));
+    Frame f = newShadingFrame(n, ray.direction);
     
     return createIntersection(t, p, n, sphere.material, f);
 }

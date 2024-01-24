@@ -9,6 +9,22 @@
 #import "../PathTracing.h"
 using namespace metal;
 
+PathSection matSample(Ray in, Intersection intersection, constant char * materials, constant MaterialDescription * matTypes, constant char * scene, constant GeometryType * types, constant uint & objectCount, device HaltonSampler & sampler) {
+    in.origin = intersection.p;
+    float3 dir = sampleCosineHemisphere(generateVec(sampler));
+    in.direction = toWorld(dir, intersection.frame);
+    in.origin += in.direction * 1e-4;
+    Intersection next = trace(in, scene, types, objectCount);
+    MaterialDescription mat = matTypes[next.materialId];
+    
+    PathSection p;
+    p.direction = in.direction;
+    p.intersection = next;
+    p.pdf = cosineHemispherePdf(dir);
+    p.result = -dot(in.direction, next.n) > 0 ? in.throughput * getEmission(mat, materials) : 0.;
+    p.throughput = getReflectance(mat, materials) * abs(dot(in.direction, next.n));
+    return p;
+};
 
 [[kernel]]
 void pathMatsIntersection(uint tid [[thread_position_in_grid]],
@@ -24,8 +40,6 @@ void pathMatsIntersection(uint tid [[thread_position_in_grid]],
     intersection = trace(ray, scene, types, objectCount);
     
     if (intersection.t != INFINITY) {
-//        ray.direction = reflect(ray.direction, intersection.n);
-//        ray.origin = intersection.p + ray.direction * 1e-4;
         notConverged = true;
     } else {
         ray.state = FINISHED;
@@ -39,8 +53,7 @@ void pathMatsShading(uint tid [[thread_position_in_grid]],
                      device Intersection * intersections,
                      constant char * materials,
                      constant MaterialDescription * matTypes,
-                     device HaltonSampler * samplers
-                     ) {
+                     device HaltonSampler * samplers) {
     if (tid > rayCount)
         return;
     
@@ -50,7 +63,7 @@ void pathMatsShading(uint tid [[thread_position_in_grid]],
     Intersection intersection = intersections[tid];
     if (intersection.t < INFINITY) {
         MaterialDescription desc = matTypes[intersection.materialId];
-        ray.result += getEmission(desc, materials) * ray.throughput * abs(dot(ray.direction, intersection.n));
+        ray.result += getEmission(desc, materials) * ray.throughput * max(0.f, dot(-ray.direction, intersection.n));
         ray.state = OLD;
         
         device HaltonSampler & sam = samplers[tid];
@@ -75,7 +88,7 @@ void pathMatsShading(uint tid [[thread_position_in_grid]],
                     eta1 = 1.0002;
                 }
                 
-                float3 v = toFrame(-ray.direction, intersection.frame);
+                float3 v = toWorld(-ray.direction, intersection.frame);
                 
                 float eta = eta1 / eta2;
                 float c1 = v.y;
@@ -92,7 +105,7 @@ void pathMatsShading(uint tid [[thread_position_in_grid]],
             case BASIC: {
                 float3 dir = sampleCosineHemisphere(sample);
                 
-                ray.direction = toFrame(dir, intersection.frame);
+                ray.direction = toWorld(dir, intersection.frame);
         //        float cos = abs(dot(ray.direction, intersection.n));
                 ray.throughput *= /*cos **/ getReflectance(desc, materials);// / uniformHemispherePdf(dir);// * abs(cos);
                 ray.origin = intersection.p + ray.direction * 1e-4;

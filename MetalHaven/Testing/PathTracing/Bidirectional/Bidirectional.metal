@@ -8,27 +8,10 @@
 #include <metal_stdlib>
 using namespace metal;
 #import "../PathTracing.h"
-//
-//struct PathSection {
-//    Ray ray;
-//    Intersection intersection;
-//};
-//
-//PathSection matSample(Ray in, Intersection intersection, constant char * materials, constant MaterialDescription * matTypes, constant char * scene, constant GeometryType * types, constant uint & objectCount, device HaltonSampler & sampler) {
-//    in.origin = intersection.p;
-//    float3 dir = sampleCosineHemisphere(generateVec(sampler));
-//    in.direction = toFrame(dir, intersection.frame);
-//    in.origin += in.direction * 1e-4;
-//    Intersection next = trace(in, scene, types, objectCount);
-//    MaterialDescription mat = matTypes[next.materialId];
-//    in.result += in.throughput * getEmission(mat, materials);
-//    in.throughput *= getReflectance(mat, materials);
-//    
-//    PathSection p;
-//    p.ray = in;
-//    p.intersection = next;
-//    return p;
-//};
+
+bool isValid(float3 in, float3 n, float3 out) {
+    return dot(-in, n) * dot(n, out) > 0;
+}
 
 [[kernel]]
 void bidirectional(uint tid [[thread_position_in_grid]],
@@ -56,27 +39,42 @@ void bidirectional(uint tid [[thread_position_in_grid]],
     ray.result = getEmission(mat, materials);
     ray.throughput *= getReflectance(mat, materials) * abs(dot(intersection.n, ray.direction));
     ray.origin = intersection.p;
-    ray.result += ray.throughput * 0.1;
+    ray.throughput /= (intersection.t * intersection.t);
     
-//    thread float && sample = generateSample(sampler);
-//    uint lightIndex = sampleLuminarySet(lights, totalArea, sample);
-//    AreaLight light = lights[lightIndex];
-//    thread float3 && n = 0.;
-//    float3 l = sampleLuminary(light, sampler, scene, types, n);
-//    
-//    float3 dir = normalize(l - ray.origin);
-//    Intersection shadow = trace(createRay(ray.origin + dir * 1e-4, dir), scene, types, objectCount);
-//    if (abs(shadow.t - distance(ray.origin, l)) < 1e-4) {
-//        ray.throughput *= max(dot(intersection.n, dir), 0.f);
-//        ray.result += ray.throughput * light.color / shadow.t / shadow.t;
-//    }
-//    
 //    PathSection p = matSample(ray, intersection, materials, matTypes, scene, types, objectCount, sampler);
-//    ray = p.ray;
+//    ray.throughput *= p.throughput;
+//    ray.direction = p.direction;
+//    intersection = p.intersection;
+    
+    thread float && sample = generateSample(sampler);
+    uint lightIndex = sampleLuminarySet(lights, totalArea, sample);
+    AreaLight light = lights[lightIndex];
+    thread float3 && n = 0.;
+    float3 l = sampleLuminary(light, sampler, scene, types, n);
+    ray.throughput *= totalArea;
+    
+    float3 dir = sampleSphere(generateVec(sampler));
+    ray.throughput /= spherePdf(dir);
+    
+    Intersection first = trace(createRay(l + dir * 1e-4, dir), scene, types, objectCount);
+    ray.throughput *= max(dot(dir, n), 0.f) * abs(dot(dir, first.n)) / (first.t * first.t);
+    
+    float3 connect = normalize(first.p - intersection.p);
+    if (!isValid(ray.direction, intersection.n, connect) || !isValid(dir, first.n, -connect))
+        return;
+    
+    ray.direction = connect;
+    ray.origin += connect * 1e-4;
+    Intersection shadow = trace(ray, scene, types, objectCount);
+    if (abs(shadow.t - distance(ray.origin, first.p)) < 1e-4) {
+        ray.throughput *= abs(dot(connect, intersection.n) * dot(connect, first.n)) / (shadow.t * shadow.t);
+        
+        ray.result += light.color * ray.throughput;
+    }
     ray.state = FINISHED;
 }
 
-
+//[[kernel]]
 //void bidirectional(uint tid [[thread_position_in_grid]],
 //             device Ray * rays,
 //             constant uint & rayCount,

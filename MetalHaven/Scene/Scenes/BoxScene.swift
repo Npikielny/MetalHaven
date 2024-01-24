@@ -59,14 +59,14 @@ extension GeometryScene {
             ),
             // Light
             Triangle(
-                v1: vector_float3(0.25, 1.58, -0.25),
-                v2: vector_float3(0.25, 1.58, 0.25),
+                v1: vector_float3(0.25, 1.58, 0.25),
+                v2 : vector_float3(0.25, 1.58, -0.25),
                 v3: vector_float3(-0.25, 1.58, 0.25),
                 material: 4
             ),
             Triangle(
-                v1: vector_float3(0.25, 1.58, -0.25),
-                v2: vector_float3(-0.25, 1.58, 0.25),
+                v1: vector_float3(-0.25, 1.58, 0.25),
+                v2: vector_float3(0.25, 1.58, -0.25),
                 v3: vector_float3(-0.255, 1.58, -0.25),
                 material: 4
             ),
@@ -78,8 +78,8 @@ extension GeometryScene {
             ),
             
             Sphere( // right sphere
-                position: vector_float3(0.45, 0.65 / 2, -0.25),
-                size: 0.6 / 2,
+                position: vector_float3(0.45, 0.3, -0.25),
+                size: 0.3,
                 material: 3 // 5
             )
         ],
@@ -146,8 +146,8 @@ extension GeometryScene {
             ),
             
             Sphere( // right sphere
-                position: vector_float3(0.45, 0.65 / 2, -0.25),
-                size: 0.6 / 2,
+                position: vector_float3(0.45, 0.3, -0.25),
+                size: 0.3,
                 material: 3 // 5
             )
         ],

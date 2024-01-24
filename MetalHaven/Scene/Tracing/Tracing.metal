@@ -22,7 +22,7 @@ float abscos(vector_float3 wi, vector_float3 n) {
     return abs(dot(wi, n));
 }
 
-vector_float3 toFrame(vector_float3 v, Frame frame) {
+vector_float3 toWorld(vector_float3 v, Frame frame) {
     return v.x * frame.right + v.y * frame.up + v.z * frame.forward;
 //    return float3(dot(v, frame.right),
 //                  dot(v, frame.forward),

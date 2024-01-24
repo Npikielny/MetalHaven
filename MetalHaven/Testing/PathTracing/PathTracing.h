@@ -15,5 +15,6 @@
 #import "../../Scene/Lighting/MetalLighting.hpp"
 #import "../../Sampling/Sampling.h"
 #import "../../Sampling/MetalSampling.hpp"
+#import "./PathMats/SampleMat.hpp"
 
 #endif /* PathTracing_h */
