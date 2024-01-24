@@ -26,6 +26,40 @@ PathSection matSample(Ray in, Intersection intersection, constant char * materia
     return p;
 };
 
+float fresnelMat(float cosThetaI, float extIOR, float intIOR) {
+    float etaI = extIOR, etaT = intIOR;
+
+    if (extIOR == intIOR)
+        return 0.0f;
+
+    /* Swap the indices of refraction if the interaction starts
+       at the inside of the object */
+    if (cosThetaI < 0.0f) {
+//        swap(etaI, etaT);
+        float temp = etaI;
+        etaI = etaT;
+        etaI = temp;
+        cosThetaI = -cosThetaI;
+    }
+
+    /* Using Snell's law, calculate the squared sine of the
+       angle between the normal and the transmitted ray */
+    float eta = etaI / etaT,
+          sinThetaTSqr = eta*eta * (1-cosThetaI*cosThetaI);
+
+    if (sinThetaTSqr > 1.0f)
+        return 1.0f;  /* Total internal reflection! */
+
+    float cosThetaT = sqrt(1.0f - sinThetaTSqr);
+
+    float Rs = (etaI * cosThetaI - etaT * cosThetaT)
+             / (etaI * cosThetaI + etaT * cosThetaT);
+    float Rp = (etaT * cosThetaI - etaI * cosThetaT)
+             / (etaT * cosThetaI + etaI * cosThetaT);
+
+    return (Rs * Rs + Rp * Rp) / 2.0f;
+}
+
 [[kernel]]
 void pathMatsIntersection(uint tid [[thread_position_in_grid]],
                           device Ray * rays,
@@ -75,30 +109,23 @@ void pathMatsShading(uint tid [[thread_position_in_grid]],
                 break;
             }
             case DIELECTRIC: {
-//                ray.direction = refract(ray.direction, intersection.n, dot(-ray.direction, intersection.n) > 0 ? 1.5046 : 1.0002);
-                
-                // refract
-                float eta1;
-                float eta2;
-                if (dot(-ray.direction, intersection.n) < 0) {
-                    eta1 = 1.5046;
-                    eta2 = 1.0002;
+                Dielectric mat = *(constant Dielectric *)(materials + matTypes[intersection.materialId].index);
+                float c = dot(-ray.direction, intersection.n);
+                float f = fresnelMat(c, 1.000277f, mat.IOR);
+                bool entering = dot(ray.direction, intersection.n) < 0;
+                float eta1 = entering ? 1.000277f : mat.IOR;
+                float eta2 = entering ? mat.IOR : 1.000277f;
+
+                if (generateSample(sam) < f) {
+                    // reflect
+                    ray.direction = reflect(ray.direction, intersection.n);
+                    ray.origin = intersection.p + ray.direction * 1e-4;
                 } else {
-                    eta2 = 1.5046;
-                    eta1 = 1.0002;
+                    // refract
+                    float eta = (eta1 / eta2);
+                    ray.direction = refract(ray.direction, intersection.n * (entering ? 1 : -1), eta);
+                    ray.eta /= eta;
                 }
-                
-                float3 v = toWorld(-ray.direction, intersection.frame);
-                
-                float eta = eta1 / eta2;
-                float c1 = v.y;
-                float w = eta * c1;
-                float c2m = (w - eta) * (w + eta);
-                v = eta * -v + (w - sqrt(1.0f + c2m)) * float3(0, 1, 0);
-                ray.direction = float3(dot(v, intersection.frame.right),
-                                       dot(v, intersection.frame.up),
-                                       dot(v, intersection.frame.forward));
-                
                 ray.origin = intersection.p + ray.direction * 1e-4;
                 break;
             }

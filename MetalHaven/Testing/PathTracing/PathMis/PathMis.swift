@@ -11,7 +11,7 @@ import MetalAbstract
 typealias PathMis = PathTracingView<PathMisIntersector, PathMisIntersector>
 
 class PathMisIntersector: Intersector {
-    var maxIterations: Int? { 10 }
+    var maxIterations: Int? { 30 }
     
     let shader = ComputeShader(
         name: "pathMis",
@@ -103,16 +103,17 @@ class PathMisIntersector: Intersector {
     }
     
     func generateIntersections(gpu: GPU, rays: Buffer<Ray>, intersections: Buffer<Intersection>, indicator: Buffer<Bool>) async throws {
-//        if rng.generate() < 1 / 100 {
-//            samplers.reset(
-//                samplers.generate(
-//                    rng: rng,
-//                    maxSeed: 1024,
-//                    count: imageSize.x * imageSize.y
-//                ),
-//                usage: .managed
-//            )
-//        }
+        if rng.generate() < 1 / 100 {
+            print("new rng")
+            samplers.reset(
+                samplers.generate(
+                    rng: rng,
+                    maxSeed: 1024,
+                    count: imageSize.x * imageSize.y
+                ),
+                usage: .managed
+            )
+        }
         shader.buffers =  [
             rays,
             Buffer([UInt32(rays.count)], usage: .sparse),

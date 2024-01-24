@@ -74,13 +74,13 @@ extension GeometryScene {
             Sphere( // left sphere
                 position: vector_float3(-0.45, 0.65 / 2, 0.3),
                 size: 0.65 / 2,
-                material: 3 // 6
+                material: 6
             ),
             
             Sphere( // right sphere
                 position: vector_float3(0.45, 0.3, -0.25),
                 size: 0.3,
-                material: 3 // 5
+                material: 5
             )
         ],
         materials: Self.cs6630BoxColors

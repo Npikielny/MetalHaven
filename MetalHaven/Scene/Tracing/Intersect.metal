@@ -34,8 +34,8 @@ Intersection planeIntersection(Triangle triangle, Ray ray) {
     
     n = -woN > 0 ? n : -n;
     
-    float3 forward = triangle.v2 - triangle.v1;
-    f = newFrame(n, forward, cross(n, forward));
+    float3 forward = normalize(triangle.v2 - triangle.v1);
+    f = newFrame(n, forward, normalize(cross(n, forward)));
     return createIntersection(t, ray.origin + ray.direction * t, n, triangle.material, f);
 }
 

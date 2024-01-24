@@ -43,7 +43,8 @@ vector_float3 getReflectance(MaterialDescription desc, constant char * ptr) {
             return mat.kd;
         }
         case DIELECTRIC: {
-            return 0.;
+            Dielectric mat = *(constant Dielectric *)(ptr + desc.index);
+            return mat.reflectance;
         }
     }
 }

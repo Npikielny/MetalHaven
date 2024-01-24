@@ -20,6 +20,7 @@ typedef struct Ray {
     vector_float3 direction;
     vector_float3 throughput;
     vector_float3 result;
+    float eta;
     enum RayState state;
 } Ray;
 

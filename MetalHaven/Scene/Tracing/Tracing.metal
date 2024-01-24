@@ -41,8 +41,8 @@ Frame newFrame(vector_float3 up, vector_float3 forward, vector_float3 right) {
 Frame newShadingFrame(vector_float3 normal, vector_float3 ray) {
     Frame f;
     f.up = normal;
-    f.right = cross(normal, ray);
-    f.forward = cross(f.right, f.up);
+    f.right = normalize(cross(normal, ray));
+    f.forward = normalize(cross(f.right, f.up));
     return f;
 }
 
@@ -103,7 +103,7 @@ uint sampleLuminarySet(constant AreaLight * lights,
 //    float offset = area - light.totalArea / totalArea;
 //    float s2 = (sample - offset) * totalArea / light.totalArea;
 //    sample = s2;
-    return i;
+    return max(i, uint(0));
 }
 
 float3 sampleLuminaryTriangle(Triangle triangle, float2 sample, thread float3 & n) {
