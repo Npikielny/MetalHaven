@@ -44,7 +44,6 @@ protocol Constant: NumericComponent {
     associatedtype Rep: NumericComponent
 }
 
-
 class ConstantWrapper<T: Constant>: NumericComponent, BasicTypes {
     typealias Raw = T
     

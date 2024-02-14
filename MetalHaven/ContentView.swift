@@ -46,19 +46,20 @@ struct ContentView: View {
 //            samples: 1
 //        )
 //        let width = 512 * 2// 4// / 4
-        let width = 800
-        let height = width * 600 / 800
-        let o = SIMD3<Float>(0, 0.919769, 5.41159)
-        let t = SIMD3<Float>(0, 0.893051, 4.41198)
-        let d = t - o
-        PathMis(
-            width: width,
-            aspectRatio: Float(width) / Float(height),
-            scene: .boxScene,
-            camera: Camera(position: o, forward: d / length(d), fov: 27.7856, imageSize: SIMD2<Int>(width, height)),
-            samples: 512 * 4,//512 * 32,//32 /** 4*/,
-            antialiased: true
-        )
+//        let width = 800
+//        let height = width * 600 / 800
+//        let o = SIMD3<Float>(0, 0.919769, 5.41159)
+//        let t = SIMD3<Float>(0, 0.893051, 4.41198)
+//        let d = t - o
+//        PathEms(
+//            width: width,
+//            aspectRatio: Float(width) / Float(height),
+//            scene: .boxScene,
+//            camera: Camera(position: o, forward: d / length(d), fov: 27.7856, imageSize: SIMD2<Int>(width, height)),
+//            samples: 512 * 4,//512 * 32,//32 /** 4*/,
+//            antialiased: true
+//        )
+        Grapher()
 //        PathEms(
 //            width: width,
 //            aspectRatio: 16 / 9,

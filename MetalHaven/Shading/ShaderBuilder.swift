@@ -7,6 +7,10 @@
 
 import Foundation
 
+struct ShaderState {
+//    var variables ...
+}
+
 struct AnyError: Error {
     var desc: String
 }

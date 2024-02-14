@@ -26,10 +26,22 @@ final class MetalHavenTests: XCTestCase {
         // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
     }
     
+    func testExpression() throws {
+        let parser = Parser()
+        
+        let result = try parser.parseStatement(statement: "x(42/x-3) + uv*4 = 123/4")
+        print(result)
+        print(parser.retextualize(symbols: result.lhs))
+        print(result.1)
+        print(parser.retextualize(symbols: result.rhs))
+        
+        try print(parser.split(expression: "sin(x)"))
+    }
+    
     func testSampling() throws {
-        let ptr = UnsafeMutablePointer<Sampler>.allocate(capacity: 1)
-        ptr.pointee = Sampler(seed: 3, uses: 1)
-        let sampled = sampleUniformDisk(ptr)
+        let ptr = UnsafeMutablePointer<HaltonSampler>.allocate(capacity: 1)
+        ptr.pointee = HaltonSampler(seed: 3, uses: 1)
+        let sampled = sampleUniformDisk(generateVec2(ptr))
         print(sampled)
         assert(uniformDiskPdf(sampled) > 0)
     }

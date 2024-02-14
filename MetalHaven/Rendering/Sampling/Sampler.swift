@@ -10,8 +10,14 @@ import Foundation
 class SamplerWrapper {
     let sampler: UnsafeMutablePointer<HaltonSampler>
     
-    var seed: UInt32 { sampler.pointee.seed }
-    var uses: UInt32 { sampler.pointee.uses }
+    var seed: UInt32 {
+        get { sampler.pointee.seed }
+        set { sampler.pointee.seed = newValue }
+    }
+    var uses: UInt32 {
+        get { sampler.pointee.uses }
+        set { sampler.pointee.uses = newValue }
+    }
     
     
     init(seed: UInt32, uses: UInt32) {
@@ -19,7 +25,7 @@ class SamplerWrapper {
         sampler.pointee = HaltonSampler(seed: seed, uses: uses)
     }
     
-    func uniformSample() -> Float {
+    func next() -> Float {
         generateSample(sampler)
     }
     
