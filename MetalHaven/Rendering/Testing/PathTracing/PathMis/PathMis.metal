@@ -9,7 +9,7 @@
 using namespace metal;
 #import "../PathTracing.h"
 
-float fresnel(float cosThetaI, float extIOR, float intIOR) {
+float fres(float cosThetaI, float extIOR, float intIOR) {
     float etaI = extIOR, etaT = intIOR;
 
     if (extIOR == intIOR)
@@ -83,7 +83,7 @@ void pathMis(uint tid [[thread_position_in_grid]],
                 case DIELECTRIC: {
                     Dielectric mat = *(constant Dielectric *)(materials + matTypes[intersection.materialId].index);
                     float c = dot(-ray.direction, intersection.n);
-                    float f = fresnel(c, 1.000277f, mat.IOR);
+                    float f = fres(c, 1.000277f, mat.IOR);
                     bool entering = dot(ray.direction, intersection.n) < 0;
                     float eta1 = entering ? 1.000277f : mat.IOR;
                     float eta2 = entering ? mat.IOR : 1.000277f;

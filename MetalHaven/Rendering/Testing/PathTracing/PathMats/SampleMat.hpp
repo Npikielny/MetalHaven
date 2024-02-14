@@ -8,9 +8,16 @@
 #ifndef SampleMat_h
 #define SampleMat_h
 
+enum BSDF {
+    SOLID_ANGLE = 0,
+    DISCRETE = 1
+};
+
 struct PathSection {
     float3 direction;
     Intersection intersection;
+    BSDF bsdf;
+    float eta;
     float pdf;
     float3 result;
     float3 throughput;

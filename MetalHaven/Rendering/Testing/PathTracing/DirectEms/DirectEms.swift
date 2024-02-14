@@ -8,61 +8,13 @@
 import Metal
 import MetalAbstract
 
-typealias PathEms = PathTracingView<PathEmsIntersector, PassIntegrator>
+typealias DirectEms = PathTracingView<DirectEmsIntersector, DirectEmsIntersector>
 
-//typealias PathEMSView = PathTracingView<PathMatsIntersector, PathEMSIntegrator>
-
-//class PathEmsIntegrator: Integrator {
-//    var maxIterations: Int? = 30
-//    
-//    var generator: Generator = PRNG()
-//    
-//    var samplers: Buffer<HaltonSampler>!
-//    
-//    let shading = ComputeShader(
-//        name: "pathMatsShading",
-//        threadGroupSize: MTLSize(width: 8, height: 1, depth: 1),
-//        dispatchSize: ThreadGroupDispatchWrapper.buffer
-//    )
-//    
-//    required init() {}
-//    
-//    func generateState(frame: Int, imageSize: SIMD2<Int>) -> () {
-////        let max: UInt32 = 0b1 << 16
-////        let shift = Float(max)
-//        let random: [UInt16] = (0..<(imageSize.x * imageSize.y))
-//            .map { _ in UInt16(min(generator.generate() * 1024, 1024 - 1)) }
-//        self.samplers = Buffer(
-//            random.map {
-//                HaltonSampler(
-//                    seed: UInt32(min(generator.generate() * 1024, 1024)),
-//                    uses: UInt32($0)
-//                )
-//            },
-//            usage: .managed
-//        )
-//    }
-//    
-//    func integrate(gpu: GPU, state: (), rays: Buffer<Ray>, intersections: Buffer<Intersection>, intersector: Intersector, emitters: [Light], materials: [Material]) async throws {
-//        shading.buffers = [
-//            rays,
-//            Buffer(name: "Ray Count", [UInt32(rays.count)], usage: .sparse),
-//            intersections,
-//            Buffer(name: "Materials", materials as! [BasicMaterial], usage: .sparse),
-//            samplers
-//        ]
-//        
-//        try await gpu.execute {
-//            shading
-//        }
-//    }
-//    
-//    
-//}
-
-class PathEmsIntersector: Intersector {
+class DirectEmsIntersector: Intersector, Integrator {
+    var maxIterations: Int? { 1 }
+    
     let shader = ComputeShader(
-        name: "pathEms",
+        name: "directEms",
         threadGroupSize: MTLSize(width: 8, height: 1, depth: 1),
         dispatchSize: ThreadGroupDispatchWrapper.buffer
     )
@@ -170,6 +122,7 @@ class PathEmsIntersector: Intersector {
         shader.buffers =  [
             rays,
             Buffer([UInt32(rays.count)], usage: .sparse),
+            intersections,
             materialBuffer,
             materialDescriptorBuffer,
             sceneBuffer,
@@ -177,13 +130,16 @@ class PathEmsIntersector: Intersector {
             objectCountBuffer,
             samplers,
             areaLightBuffer,
-            totalAreaBuffer
+            totalAreaBuffer,
+            indicator
         ]
         
         try await gpu.execute { shader }
     }
     
-    
+    func integrate(gpu: GPU, state: (), rays: Buffer<Ray>, intersections: Buffer<Intersection>, intersector: Intersector, emitters: [Light], materials: [Material]) async throws {
+        
+    }
 }
 
 extension VoidBuffer {

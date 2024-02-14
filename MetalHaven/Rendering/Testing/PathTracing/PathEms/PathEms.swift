@@ -1,20 +1,19 @@
 //
-//  PathMis.swift
+//  PathEms.swift
 //  MetalHaven
 //
-//  Created by Noah Pikielny on 1/14/24.
+//  Created by Noah Pikielny on 1/25/24.
 //
 
 import Metal
 import MetalAbstract
 
-typealias PathMis = PathTracingView<PathMisIntersector, PathMisIntersector>
-
-class PathMisIntersector: Intersector {
+typealias PathEms = PathTracingView<PathEmsIntegrator, PathEmsIntegrator>
+class PathEmsIntegrator: Intersector, Integrator {
     var maxIterations: Int? { 30 }
     
     let shader = ComputeShader(
-        name: "pathMis",
+        name: "pathEms",
         threadGroupSize: MTLSize(width: 8, height: 1, depth: 1),
         dispatchSize: ThreadGroupDispatchWrapper.buffer
     )
@@ -131,15 +130,8 @@ class PathMisIntersector: Intersector {
         
         try await gpu.execute { shader }
     }
-}
-
-extension PathMisIntersector: Integrator {
-    func integrate(gpu: GPU, state: (), rays: Buffer<Ray>, intersections: Buffer<Intersection>, intersector: Intersector, emitters: [Light], materials: [Material]) async throws {}
     
-    
-}
-
-typealias DirectMis = PathTracingView<DirectMisIntegrator, DirectMisIntegrator>
-class DirectMisIntegrator: PathMisIntersector {
-    override var maxIterations: Int? { 1 }
+    func integrate(gpu: GPU, state: (), rays: Buffer<Ray>, intersections: Buffer<Intersection>, intersector: Intersector, emitters: [Light], materials: [Material]) async throws {
+        
+    }
 }

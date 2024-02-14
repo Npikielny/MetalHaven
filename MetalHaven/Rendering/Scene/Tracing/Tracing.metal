@@ -98,7 +98,7 @@ uint sampleLuminarySet(constant AreaLight * lights,
         area += lights[i].totalArea / totalArea;
         i ++;
     }
-    i -= 1;
+    i = i == 0 ? 0 : i - 1;
 //    AreaLight light = lights[i];
 //    float offset = area - light.totalArea / totalArea;
 //    float s2 = (sample - offset) * totalArea / light.totalArea;
