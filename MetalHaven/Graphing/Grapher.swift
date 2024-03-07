@@ -5,6 +5,7 @@
 //  Created by Noah Pikielny on 2/14/24.
 //
 
+import Combine
 import MetalAbstract
 import SwiftUI
 
@@ -15,14 +16,14 @@ struct Grapher: View {
         .autoconnect()
     
     @State var equations: [String] = ["y+x=0"]
-    @State var functions: [Parser.AST?] = [try! Parser().parseStatement(statement: "y=x")]
+    @State var functions: [Parser.Statement?] = [try! Parser().parseStatement(statement: "y=x")]
     @State var tolerances = [0.005]
     
     let parser = Parser()
     let future: Future<ComputeShader>
     
     let boundsBuffer: Buffer<SIMD4<Float>>
-    
+    @State var bounds = SIMD4<Float>(-1, 1, -1, 1)
     init() {
         let tex = Texture(name: "Background", format: .rgba16Float, width: 1024, height: 1024, depth: 1, storageMode: .private, usage: [.shaderRead, .shaderWrite])
         let bounds = Buffer([SIMD4<Float>(-1, 1, -1, 1)], usage: .sparse)
@@ -55,6 +56,7 @@ struct Grapher: View {
             draw: { gpu, drawable, descriptor in
                 t += 1 / 30
                 guard let drawable, let descriptor else { print("No context"); return }
+                
                 if let shader = future.wrapped {
                     shader.textures = [tex]
                     shader.buffers = [bounds, Buffer([Float(t)], usage: .sparse)]
@@ -77,89 +79,168 @@ struct Grapher: View {
     static let fn = VariableComponent(wrappedValue: Vec2f(), name: "uv").wrappedValue.x
     
     var body: some View {
-        HStack {
-            VStack {
-                Button {
-                    let theta = Float(equations.count) * Float.pi / 20 + Float.pi / 4
-                    let fn = "\(abs(sin(theta)))y+\(abs(cos(theta)))x=0"
-                    equations.append(fn)
-                    functions.append(try! parser.parseStatement(statement: fn))
-                    tolerances.append(0.005)
-                    compile()
-                } label: {
-                    Image(systemName: "plus.circle")
-                }
-
-                ForEach(Array(equations.enumerated()), id: \.0) { (id, eq) in
-                    HStack {
-                        VStack {
-                            TextField(
-                                "Equation \(id):",
-                                text: Binding(
-                                    get: {
-                                        if id < equations.count {
-                                            return equations[id]
-                                        }
-                                        return ""
-                                    }, set: { newValue in
-                                        if id < equations.count, let parsed = try? parser.parseStatement(statement: newValue), parser.valid(ast: parsed) {
-                                            equations[id] = newValue
-                                            functions[id] = parsed
-                                            compile()
-                                        }
-                                    }
-                                )
-                            )
-                            
-                            Slider(value: Binding(get: {
-                                tolerances[id]
-                            }, set: { newValue in
-                                tolerances[id] = newValue
-                                compile()
-                            })) {
-                                Text("Tolerance")
-                            } minimumValueLabel: {
-                                Text("0.0")
-                            } maximumValueLabel: {
-                                Text("1.0")
-                            }
-                            Divider()
-                        }
-                        let color: (CGFloat, CGFloat, CGFloat) = {
-                            let rng = SamplerWrapper(seed: 2262, uses: 425)
-                            rng.seed += UInt32(id * 3)
-                            rng.uses += UInt32(id * 3)
-                            return (CGFloat(rng.next()), CGFloat(rng.next()), CGFloat(rng.next()))
-                        }()
-                        Circle()
-                            .foregroundStyle(Color(red: color.0, green: color.1, blue: color.2))
-                            .frame(width: 25, height: 25)
-                    }
-                }
-//                Text(text)
-            }
-            ZStack {
+        GeometryReader { geometry in
+            HStack {
                 VStack {
                     HStack {
-                        Text("\(boundsBuffer[0]!.w)")
-                        Spacer()
-                    }
-                    Spacer()
-                    HStack {
-                        Text("(\(boundsBuffer[0]!.x), \(boundsBuffer[0]!.z))")
-                        Spacer()
-                        Text("\(boundsBuffer[0]!.y)")
-                    }
-                }
-                view
-                    .padding()
-                    .onReceive(timer) { _ in
-                        view.draw()
+                        Button {
+                            let theta = Float(equations.count) * Float.pi / 20 + Float.pi / 4
+                            let fn = "\(abs(sin(theta)))y+\(abs(cos(theta)))x=0"
+                            equations.append(fn)
+                            functions.append(try! parser.parseStatement(statement: fn))
+                            tolerances.append(0.005)
+                            compile()
+                        } label: {
+                            Image(systemName: "plus.circle")
+                        }
+                        
+                        Button {
+                            let start = bounds
+                            let dest = SIMD4<Float>(-1, 1, -1, 1)
+                            var t: Task<(), Never>?
+                            t = Task {
+                                for i in 0...10 {
+                                    let alpha = Float(i) / Float(10)
+                                    let lerp = alpha * dest + (1 - alpha) * start
+                                    await MainActor.run {
+                                        bounds = lerp
+                                        boundsBuffer[0] = lerp
+                                    }
+//                                    t.sleep(nanoseconds: 1000)
+//                                    try await Task.sleep(nanoseconds: 10000)
+
+                                }
+                            }
+                        } label: {
+                            Image(systemName: "house.fill")
+                        }
+
                     }
                     
+                    ForEach(Array(equations.enumerated()), id: \.0) { (id, eq) in
+                        HStack {
+                            VStack {
+                                TextField(
+                                    "Equation \(id):",
+                                    text: Binding(
+                                        get: {
+                                            if id < equations.count {
+                                                return equations[id]
+                                            }
+                                            return ""
+                                        }, set: { newValue in
+                                            if id < equations.count, let parsed = try? parser.parseStatement(statement: newValue), parser.valid(statement: parsed) {
+                                                equations[id] = newValue
+                                                functions[id] = parsed
+                                                compile()
+                                            }
+                                        }
+                                    )
+                                )
+                                
+                                Slider(value: Binding(get: {
+                                    tolerances[id]
+                                }, set: { newValue in
+                                    tolerances[id] = newValue
+                                    compile()
+                                })) {
+                                    Text("Tolerance")
+                                } minimumValueLabel: {
+                                    Text("0.0")
+                                } maximumValueLabel: {
+                                    Text("1.0")
+                                }
+                                Divider()
+                            }
+                            let color: (CGFloat, CGFloat, CGFloat) = {
+                                let rng = SamplerWrapper(seed: 2262, uses: 425)
+                                rng.seed += UInt32(id * 3)
+                                rng.uses += UInt32(id * 3)
+                                return (CGFloat(rng.next()), CGFloat(rng.next()), CGFloat(rng.next()))
+                            }()
+                            Circle()
+                                .foregroundStyle(Color(red: color.0, green: color.1, blue: color.2))
+                                .frame(width: 25, height: 25)
+                        }
+                    }
+                    //                Text(text)
+                }
+                ZStack {
+                    VStack {
+                        HStack {
+                            Text("\(bounds.w)")
+                            Spacer()
+                        }
+                        Spacer()
+                        HStack {
+                            Text("(\(bounds.x), \(bounds.z))")
+                            Spacer()
+                            Text("\(bounds.y)")
+                        }
+                    }
+                    view
+                        .padding()
+                        .onReceive(timer) { _ in
+                            view.draw()
+                        }
+                    
+                }
+                .padding()
             }
-            .padding()
+            .gesture(DragGesture(minimumDistance: 0, coordinateSpace: .local)
+                .onChanged { drag in
+                    let t = drag.velocity
+//                    let m = max(geometry.size.width, geometry.size.height)
+                    let dx = -Float(t.width / geometry.size.width)
+                    let dy = Float(t.height / geometry.size.height)
+                    let diff = SIMD4<Float>(dx, dx, dy, dy) / 10 / 2
+                    let bounds = boundsBuffer[0] ?? SIMD4<Float>(-1, 1, -1, 1)
+                    let sum = bounds + diff
+                    boundsBuffer[0] = sum
+                    self.bounds = sum
+                }
+                .onEnded { drag in
+                    
+                }
+            )
+            .gesture(MagnifyGesture().onChanged { magnify in
+                let bounds = boundsBuffer[0] ?? SIMD4<Float>(-1, 1, -1, 1)
+                let result = bounds / Float(magnify.magnification)
+                self.bounds = result
+                boundsBuffer[0] = result
+            })
+            .onAppear {
+                trackScrollWheel()
+            }
+            .onDisappear {
+                for i in subs {
+                    print(i)
+                    i.cancel()
+                }
+                subs = Set()
+            }
+            
         }
+    }
+    
+    @State var subs = Set<AnyCancellable>()
+    
+    func trackScrollWheel() {
+        NSApp.publisher(for: \.currentEvent)
+            .filter { event in event?.type == .scrollWheel }
+//            .throttle(for: .milliseconds(2), scheduler: DispatchQueue.main, latest: true)
+            .sink(receiveCompletion: { failure in
+                print("FAILURE", failure)
+            }, receiveValue: { event in
+                guard let event else { return }
+                let zoom = exp(-Float(event.deltaY) / 30)
+                bounds *= zoom
+                boundsBuffer[0] = bounds
+            })
+//            .sink { [weak vm], event in
+////                vm?.goBackOrForwardBy(delta: Int(event?.deltaY ?? 0))
+//            }
+            .store(in: &subs)
     }
     
 //    var text: String {
@@ -201,12 +282,12 @@ void drawFunction(uint2 tid [[thread_position_in_grid]],
 """
         let fnStrings = functions
             .enumerated()
-            .compactMap { (idx, ast) -> (Int, Parser.AST)? in
-                guard let ast, parser.valid(ast: ast) else {
-                    print("INVALID AST: \(ast)")
+            .compactMap { (idx, statement) -> (Int, Parser.Statement)? in
+                guard let statement, parser.valid(statement: statement) else {
+                    print("INVALID STATEMENT: \(statement)")
                     return nil
                 }
-                return (idx, ast)
+                return (idx, statement)
             }
             .map {
 """

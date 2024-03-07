@@ -8,8 +8,8 @@
 import Metal
 import MetalAbstract
 
-typealias PathEms = PathTracingView<PathEmsIntegrator, PathEmsIntegrator>
-class PathEmsIntegrator: Intersector, Integrator {
+typealias PathEms = SequencePathTracingView<PathEmsIntegrator, PathEmsIntegrator>
+class PathEmsIntegrator: SequenceIntersector, SequenceIntegrator {
     var maxIterations: Int? { 30 }
     
     let shader = ComputeShader(
@@ -101,7 +101,7 @@ class PathEmsIntegrator: Intersector, Integrator {
         totalArea.reset([lightSampler.totalArea], usage: .sparse)
     }
     
-    func generateIntersections(gpu: GPU, rays: Buffer<Ray>, intersections: Buffer<Intersection>, indicator: Buffer<Bool>) async throws {
+    func intersect(gpu: GPU, rays: Buffer<Ray>, intersections: Buffer<Intersection>, indicator: Buffer<Bool>) async throws {
         if rng.generate() < 1 / 100 {
             print("new rng")
             samplers.reset(
@@ -131,7 +131,7 @@ class PathEmsIntegrator: Intersector, Integrator {
         try await gpu.execute { shader }
     }
     
-    func integrate(gpu: GPU, state: (), rays: Buffer<Ray>, intersections: Buffer<Intersection>, intersector: Intersector, emitters: [Light], materials: [Material]) async throws {
+    func integrate(gpu: GPU, state: (), rays: Buffer<Ray>, intersections: Buffer<Intersection>, intersector: SequenceIntersector, emitters: [Light], materials: [Material]) async throws {
         
     }
 }

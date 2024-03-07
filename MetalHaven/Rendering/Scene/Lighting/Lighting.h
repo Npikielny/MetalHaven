@@ -73,4 +73,11 @@ typedef struct Microfacet {
 } Microfacet;
 
 float maxComponent(vector_float3 v);
+
+typedef enum BSDF {
+    SOLID_ANGLE = 0,
+    DISCRETE = 1
+} BSDF;
+
+BSDF matSamplingStrategy(enum MaterialType type);
 #endif /* Lighting_h */

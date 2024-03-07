@@ -24,7 +24,7 @@ public class Temp: ObservableObject {
     public static func == (lhs: Temp, rhs: Temp) -> Bool { lhs.id == rhs.id }
 }
 
-struct PathTracingView<T: Intersector, K: Integrator>: View {
+struct SequencePathTracingView<T: SequenceIntersector, K: SequenceIntegrator>: View {
     let view: MAView
     @StateObject var update: Temp
     let aspectRatio: Float
@@ -142,6 +142,80 @@ struct PathTracingView<T: Intersector, K: Integrator>: View {
                 }
             }
         }
+    }
+}
+
+struct PathTracingView: View {
+    let view: MAView
+    @StateObject var update: Temp
+    let aspectRatio: Float
+    
+    let timer = Timer.publish(every: 1 / 30, on: .main, in: .default).autoconnect()
+    
+    init(scene: GeometryScene, camera: Camera, samples: Int, antialiased: Bool, renderer: Renderer) {
+        self.aspectRatio = Float(camera.imageSize.x) / Float(camera.imageSize.y)
+        let upd = Temp()
+        self._update = StateObject(wrappedValue: upd)
+        
+        let drawOperation = RasterShader(
+            vertexShader: "getCornerVerts",
+            fragmentShader: /*"dynamicTexture",*/ "copyTexture",
+//            fragmentTextures: [tex],
+//            fragmentBuffers: [Buffer(name: "Rscale", [Float(rescale)], usage: .sparse)],
+            startingVertex: 0,
+            vertexCount: 6,
+            passDescriptor: .drawable,
+            format: .rgba16Float
+        )
+        self.view = MAView(
+            gpu: .default,
+            frame: CGRect(origin: .zero, size: CGSize(width: camera.imageSize.x, height: camera.imageSize.y)),
+            format: .rgba16Float,
+            updateProcedure: .manual) { gpu, drawable, descriptor in
+                guard let drawable, let descriptor else { print("No context"); return }
+                guard drawOperation.fragmentTextures.count > 0, drawOperation.fragmentBuffers.count > 0 else { print("No textures or buffers yet..."); return }
+                try! await gpu.execute(drawable: drawable, descriptor: descriptor) { drawOperation }
+            }
+        
+        
+        
+        Task {
+            let _ = try! await RendererManager.render(
+                gpu: .default,
+                samples: samples,
+                renderer: renderer,
+                antialiased: antialiased,
+                scene: scene,
+                camera: camera,
+                frame: 0) { texture, rescale in
+                    drawOperation.fragmentTextures = [texture]
+                    drawOperation.fragmentBuffers = [Buffer(name: "Rescale", [Float(rescale)], usage: .sparse)]
+                }
+        }
+    }
+    
+    var body: some View {
+        VStack(alignment: .center) {
+            HStack(alignment: .center) {
+                
+                //            VStack {
+                //                Button { view.draw() } label: { Text("Draw") }
+                //            }
+                GeometryReader { geometry in
+                    //                Spacer()
+                    if geometry.size.height * CGFloat(aspectRatio) > geometry.size.width {
+                        view
+                            .frame(width: geometry.size.width, height: geometry.size.width / CGFloat(aspectRatio))
+                    } else {
+                        view
+                            .frame(width: geometry.size.height * CGFloat(aspectRatio), height: geometry.size.height)
+                    }
+                }
+                .onReceive(timer) { _ in
+                    view.draw()
+                }
+            }
+        }.aspectRatio(CGFloat(aspectRatio), contentMode: .fit)
     }
 }
 

@@ -8,9 +8,9 @@
 import Metal
 import MetalAbstract
 
-typealias PathMis = PathTracingView<PathMisIntersector, PathMisIntersector>
+typealias PathMis = SequencePathTracingView<PathMisIntersector, PathMisIntersector>
 
-class PathMisIntersector: Intersector {
+class PathMisIntersector: SequenceIntersector {
     var maxIterations: Int? { 10 }
     
     let shader = ComputeShader(
@@ -102,7 +102,7 @@ class PathMisIntersector: Intersector {
         totalArea.reset([lightSampler.totalArea], usage: .sparse)
     }
     
-    func generateIntersections(gpu: GPU, rays: Buffer<Ray>, intersections: Buffer<Intersection>, indicator: Buffer<Bool>) async throws {
+    func intersect(gpu: GPU, rays: Buffer<Ray>, intersections: Buffer<Intersection>, indicator: Buffer<Bool>) async throws {
         if rng.generate() < 1 / 100 {
             print("new rng")
             samplers.reset(
@@ -133,13 +133,13 @@ class PathMisIntersector: Intersector {
     }
 }
 
-extension PathMisIntersector: Integrator {
-    func integrate(gpu: GPU, state: (), rays: Buffer<Ray>, intersections: Buffer<Intersection>, intersector: Intersector, emitters: [Light], materials: [Material]) async throws {}
+extension PathMisIntersector: SequenceIntegrator {
+    func integrate(gpu: GPU, state: (), rays: Buffer<Ray>, intersections: Buffer<Intersection>, intersector: SequenceIntersector, emitters: [Light], materials: [Material]) async throws {}
     
     
 }
 
-typealias DirectMis = PathTracingView<DirectMisIntegrator, DirectMisIntegrator>
+typealias DirectMis = SequencePathTracingView<DirectMisIntegrator, DirectMisIntegrator>
 class DirectMisIntegrator: PathMisIntersector {
     override var maxIterations: Int? { 1 }
 }

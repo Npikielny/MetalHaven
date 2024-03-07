@@ -8,9 +8,9 @@
 import Metal
 import MetalAbstract
 
-typealias Bidirectional = PathTracingView<BidirectionalIntegrator, BidirectionalIntegrator>
+typealias Bidirectional = SequencePathTracingView<BidirectionalIntegrator, BidirectionalIntegrator>
 
-class BidirectionalIntegrator: Intersector, Integrator {
+class BidirectionalIntegrator: SequenceIntersector, SequenceIntegrator {
     var maxIterations: Int? { 1 }
     
     let shader = ComputeShader(
@@ -103,7 +103,7 @@ class BidirectionalIntegrator: Intersector, Integrator {
         totalArea.reset([lightSampler.totalArea], usage: .sparse)
     }
     
-    func generateIntersections(gpu: GPU, rays: Buffer<Ray>, intersections: Buffer<Intersection>, indicator: Buffer<Bool>) async throws {
+    func intersect(gpu: GPU, rays: Buffer<Ray>, intersections: Buffer<Intersection>, indicator: Buffer<Bool>) async throws {
         if rng.generate() < 1 / 100 {
             samplers.reset(
                 samplers.generate(
@@ -132,7 +132,7 @@ class BidirectionalIntegrator: Intersector, Integrator {
         try await gpu.execute { shader }
     }
     
-    func integrate(gpu: GPU, state: (), rays: Buffer<Ray>, intersections: Buffer<Intersection>, intersector: Intersector, emitters: [Light], materials: [Material]) async throws {
+    func integrate(gpu: GPU, state: (), rays: Buffer<Ray>, intersections: Buffer<Intersection>, intersector: SequenceIntersector, emitters: [Light], materials: [Material]) async throws {
         
     }
 }

@@ -8,7 +8,7 @@
 import Metal
 import MetalAbstract
 
-class RayTracerIntersector: Intersector {
+class RayTracerIntersector: SequenceIntersector {
     var spheres: Buffer<Sphere>!
     var materials: Buffer<BasicMaterial>!
     
@@ -22,7 +22,7 @@ class RayTracerIntersector: Intersector {
         materials = Buffer(scene.materials as! [BasicMaterial], usage: .managed)
     }
     
-    func generateIntersections(gpu: GPU, rays: Buffer<Ray>, intersections: Buffer<Intersection>, indicator: Buffer<Bool>) async throws {
+    func intersect(gpu: GPU, rays: Buffer<Ray>, intersections: Buffer<Intersection>, indicator: Buffer<Bool>) async throws {
         try await gpu.execute {
             ComputeShader(
                 name: "rayTrace",
@@ -45,7 +45,7 @@ class RayTracerIntersector: Intersector {
     }
 }
 
-class RayTracerIntegrator: Integrator {
+class RayTracerIntegrator: SequenceIntegrator {
     typealias State = ()
     var maxIterations: Int? = 8
     
@@ -56,7 +56,7 @@ class RayTracerIntegrator: Integrator {
         state: (),
         rays: Buffer<Ray>,
         intersections: Buffer<Intersection>,
-        intersector: Intersector,
+        intersector: SequenceIntersector,
         emitters: [Light],
         materials: [Material]) async throws {
             let buffer = Buffer(materials as! [BasicMaterial], usage: .managed)

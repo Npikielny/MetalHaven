@@ -15,7 +15,7 @@
 Intersection trace(Ray ray,
                       constant char * scene,
                       constant GeometryType * types,
-                      constant uint & objectCount);
+                      uint objectCount);
 
 
 uint sampleLuminarySet(constant AreaLight * lights,

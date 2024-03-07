@@ -21,6 +21,8 @@ typedef struct Ray {
     vector_float3 throughput;
     vector_float3 result;
     float eta;
+    float expected; 
+    float mis;
     enum RayState state;
 } Ray;
 

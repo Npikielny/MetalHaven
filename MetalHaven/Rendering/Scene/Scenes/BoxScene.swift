@@ -13,7 +13,7 @@ extension GeometryScene {
         BasicMaterial(albedo: SIMD3(0.630, 0.065, 0.05), specular: .zero, emission: .zero),// blue
         BasicMaterial(albedo: SIMD3(0.161, 0.133, 0.427), specular: .zero, emission: .zero),// red
         BasicMaterial(albedo: .one, specular: .zero, emission: .zero),// sphere
-        BasicMaterial(albedo: .one, specular: .zero, emission: .one * 40),// light
+        BasicMaterial(albedo: .zero, specular: .zero, emission: .one * 40),// light
         MirrorMat(reflectance: .one * 0.99),
         Dielectric(reflectance: .one, IOR: 1.5046)
     ]
@@ -23,14 +23,14 @@ extension GeometryScene {
         geometry: [
             Plane( // floor
                 v1: vector_float3(1, 0, 0),
-                v2: vector_float3(-1, 0, 0),
-                v3: vector_float3(-1, 0, -1),
+                v2: vector_float3(-1, 0, -1),
+                v3: vector_float3(-1, 0, 0),
                 material: 0
             ),
             Plane( // floor
                 v1: vector_float3(1, 0, 0),
-                v2: vector_float3(-1, 0, 0),
-                v3: vector_float3(-1, 0, -1),
+                v2: vector_float3(-1, 0, -1),
+                v3: vector_float3(-1, 0, 0),
                 material: 0
             ),
             Plane( // ceiling
@@ -47,30 +47,35 @@ extension GeometryScene {
             ),
             Plane( // left
                 v1: vector_float3(-1, 0, 0),
-                v2: vector_float3(-1, 1, 0),
-                v3: vector_float3(-1, 0, -1),
+                v2: vector_float3(-1, 0, -1),
+                v3: vector_float3(-1, 1, 0),
                 material: 2
             ),
             Plane( // back
                 v1: vector_float3(0, 0, -1),
-                v2: vector_float3(0, 1, -1),
-                v3: vector_float3(1, 0, -1),
+                v2: vector_float3(1, 0, -1),
+                v3: vector_float3(0, 1, -1),
                 material: 0
             ),
             // Light
             Triangle(
-                v1: vector_float3(0.25, 1.58, 0.25),
-                v2 : vector_float3(0.25, 1.58, -0.25),
-                v3: vector_float3(-0.25, 1.58, 0.25),
+                v1: vector_float3(-0.25, 1.58, -0.25),
+                v2: vector_float3(0.25, 1.58, -0.25),
+                v3: vector_float3(0.25, 1.58, 0.25),
                 material: 4
             ),
             Triangle(
-                v1: vector_float3(-0.25, 1.58, 0.25),
-                v2: vector_float3(0.25, 1.58, -0.25),
-                v3: vector_float3(-0.255, 1.58, -0.25),
+                v1: vector_float3(-0.25, 1.58, -0.25),
+                v2: vector_float3(0.25, 1.58, 0.25),
+                v3: vector_float3(-0.25, 1.58, 0.25),
                 material: 4
             ),
-
+//            Sphere(
+//                position: vector_float3(0, 1.58, 0),
+//                size: 0.25,
+//                material: 4
+//            ),
+            
             Sphere( // left sphere
                 position: vector_float3(-0.45, 0.65 / 2, 0.3),
                 size: 0.65 / 2,

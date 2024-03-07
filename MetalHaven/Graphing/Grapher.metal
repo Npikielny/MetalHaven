@@ -8,8 +8,8 @@
 #include <metal_stdlib>
 using namespace metal;
 
-constant float MAJOR_GRIDLINES = 0.25;
-constant float MINOR_GRIDLINES = 0.25 / 5;
+constant int MAJOR_GRIDLINES = 4;
+constant int MINOR_GRIDLINES = 4 * 5;
 
 [[kernel]]
 void drawBackground(uint2 tid [[thread_position_in_grid]],
@@ -25,15 +25,20 @@ void drawBackground(uint2 tid [[thread_position_in_grid]],
         return;
     }
     
-    float2 offset = round(p / MAJOR_GRIDLINES);
-    float2 deviation = abs(p - offset * MAJOR_GRIDLINES) / MAJOR_GRIDLINES;
+    float2 diff = MAX - MIN;
+    
+    float2 major = diff / float(MAJOR_GRIDLINES);
+    float2 offset = round(p / major);
+    float2 deviation = abs(p - offset * major) / major;
     
     if (abs(deviation.x) < 0.01 || abs(deviation.y) < 0.01) {
         background.write(0.5, tid);
         return;
     }
-    offset = round(p / MINOR_GRIDLINES);
-    deviation = abs(p - offset * MINOR_GRIDLINES) / MINOR_GRIDLINES;
+    
+    float2 minor = diff / float(MINOR_GRIDLINES);
+    offset = round(p / minor);
+    deviation = abs(p - offset * minor) / minor;
     if (abs(deviation.x) < 0.04 || abs(deviation.y) < 0.04) {
         background.write(0.25, tid);
         return;

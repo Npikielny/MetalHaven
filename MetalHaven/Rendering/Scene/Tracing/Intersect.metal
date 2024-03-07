@@ -32,7 +32,7 @@ Intersection planeIntersection(Triangle triangle, Ray ray) {
     if (t < 0)
         return i;
     
-    n = -woN > 0 ? n : -n;
+//    n = -woN > 0 ? n : -n;
     
     float3 forward = normalize(triangle.v2 - triangle.v1);
     f = newFrame(n, forward, normalize(cross(n, forward)));

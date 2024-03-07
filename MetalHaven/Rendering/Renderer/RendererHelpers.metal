@@ -7,6 +7,14 @@
 
 #include <metal_stdlib>
 #import "../Scene/Tracing/Tracing.h"
+
+#import "../Scene/Tracing/Tracing.h"
+#import "../Scene/Tracing/MetalTracing.hpp"
+#import "../Scene/Geometry/Geometry.h"
+#import "../Scene/Lighting/Lighting.h"
+#import "../Scene/Lighting/MetalLighting.hpp"
+#import "../Sampling/MetalSampling.hpp"
+
 using namespace metal;
 
 // MARK: Clearing Textures
@@ -93,4 +101,96 @@ void accumulate(uint2 tid [[thread_position_in_grid]],
     float3 previous = in.read(tid).xyz;
     
     out.write(float4(previous + ray.result / float(samples), 1), tid);
+}
+
+[[kernel]]
+void intersect(uint tid [[thread_position_in_grid]],
+                       device Ray * rays,
+                       constant uint & rayCount,
+                       device Intersection * intersections,
+                       constant char * scene,
+                       constant GeometryType * types,
+                       constant uint & objectCount) {
+    if (tid >= rayCount)
+        return;
+    device Intersection & intersection = intersections[tid];
+    device Ray & ray = rays[tid];
+    switch (ray.state) {
+        case FINISHED: { return; }
+        case TRACING: {}
+        case OLD: {
+            ray.origin += ray.direction * 1e-4;
+            intersection = trace(ray, scene, types, objectCount);
+            if (intersection.t == INFINITY) {
+                ray.state = FINISHED;
+                return;
+            }
+            intersection.t += 1e-4;
+        }
+    }
+}
+
+[[kernel]]
+void cleanAndAccumulate(uint tid [[thread_position_in_grid]],
+                        device Ray * rays,
+                        constant uint & chunkOffset,
+                        constant uint & rayCount,
+                        device uint * samples,
+                        constant uint & max,
+                        constant float3x3 & projection,
+                        constant float3 & center,
+                        device HaltonSampler * samplers,
+                        device bool & indicator,
+                        texture2d<float, access::read_write> destination,
+                        texture2d<float, access::write> temp) {
+    uint width = destination.get_width();
+    if (tid >= rayCount)
+        return;
+    uint s = samples[tid];
+    if (s > max)
+        return;
+    device Ray & ray = rays[tid];
+//    switch (ray.state) {
+//        case TRACING: {}
+//        case OLD: { return; }
+//        case FINISHED: { break; }
+//    }
+    
+    uint x = (tid + chunkOffset) % width;
+    uint y = (tid + chunkOffset) / width;
+    uint2 p = uint2(x, y);
+    
+//    if (s >= max) {
+//        float3 result = (ray.result + tex.read(p).xyz * float(max - 1))/float(max);
+//        float4 r = float4(result, 1);
+//        tex.write(r, p);
+//        samples[tid] += 1;
+//        return;
+//    }
+    uint2 size = uint2(width, destination.get_height());
+    
+    device HaltonSampler & sampler = samplers[tid];
+    float2 jitter = (generateVec(sampler) * 2 - 1) / float2(size);
+    
+    float2 uv = float2(x, y) / float2(size) * 2 - 1 + jitter;
+    
+    float3 dir = normalize(projection * float3(uv, 1));
+    
+    float3 result = destination.read(p).xyz;
+//    float3 result = ray.result;
+//        float3 result = (ray.result + tex.read(p).xyz * float(s))/float(s + 1);
+    float3 sum = result + ray.result / float(max);
+    float3 r = sum * float(max) / float(s + 1);
+    temp.write(float4(r / (r + 1), 1), p);
+    if (ray.state == FINISHED) {
+        samples[tid] = s + 1;
+        if (samples[tid] > max) {
+            destination.write(float4(sum / (sum + 1), 1), p);
+        } else {
+            destination.write(float4(sum, 1), p);
+        }
+        rays[tid] = createRay(center, dir);
+    }
+    
+    indicator = true;
 }

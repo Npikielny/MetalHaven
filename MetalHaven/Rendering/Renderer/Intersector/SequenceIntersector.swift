@@ -14,8 +14,12 @@ protocol Intersector {
         scene: GeometryScene,
         imageSize: SIMD2<Int>
     )
+}
+
+protocol SequenceIntersector: Intersector {
+    init()
     
-    func generateIntersections(
+    func intersect(
         gpu: GPU,
         rays: Buffer<Ray>,
         intersections: Buffer<Intersection>,

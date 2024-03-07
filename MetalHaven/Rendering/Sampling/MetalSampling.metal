@@ -16,7 +16,7 @@ constant unsigned int primes[] = {
     23, 29, 31, 37,
     41, 43, 47, 53,
     59, 61, 67, 71,
-    73, 79, 83//, 89
+    73, 79, 83, 89
 };
 
 // Returns the i'th element of the Halton sequence using the d'th prime number as a
@@ -26,7 +26,7 @@ constant unsigned int primes[] = {
 // and each sample (frame) uses a different index `i`. To decorrelate each pixel,
 // you can apply a random offset to `i`.
 float halton(unsigned int i, unsigned int d) {
-    d = d % 23;
+    d = d % 24;
     unsigned int b = primes[d];
     
     float f = 1.0f;

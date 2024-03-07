@@ -110,9 +110,10 @@ Bounce sampleBSDF(float3 wi, Frame frame, MaterialDescription desc, constant cha
         case MICROFACET:
         case BASIC: {
             b.bsdf = SOLID_ANGLE;
-            b.wo = toWorld(sampleCosineHemisphere(generateVec(sampler)), frame);
+            float3 wo = sampleCosineHemisphere(generateVec(sampler));
+            b.wo = toWorld(wo, frame);
 //            b.sample = getReflectance(desc, materials);
-            b.pdf = cosineHemispherePdf(b.wo);
+            b.pdf = cosineHemispherePdf(wo);
             break;
         }
     }

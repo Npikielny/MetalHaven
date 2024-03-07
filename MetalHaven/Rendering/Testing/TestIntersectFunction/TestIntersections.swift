@@ -8,17 +8,17 @@
 import Metal
 import MetalAbstract
 
-class TestIntersectionsIntegrator: Integrator {
+class TestIntersectionsIntegrator: SequenceIntegrator {
     var maxIterations: Int? = 1
     
     required init() {}
     
-    func integrate(gpu: GPU, state: (), rays: Buffer<Ray>, intersections: Buffer<Intersection>, intersector: Intersector, emitters: [Light], materials: [Material]) async throws {
+    func integrate(gpu: GPU, state: (), rays: Buffer<Ray>, intersections: Buffer<Intersection>, intersector: SequenceIntersector, emitters: [Light], materials: [Material]) async throws {
         
     }
 }
 
-class TestIntersectionsIntersector: Intersector {
+class TestIntersectionsIntersector: SequenceIntersector {
     typealias State = ()
     
     var geometry: VoidBuffer!
@@ -56,7 +56,7 @@ class TestIntersectionsIntersector: Intersector {
         return geom.stride
     }
     
-    func generateIntersections(gpu: GPU, rays: Buffer<Ray>, intersections: Buffer<Intersection>, indicator: Buffer<Bool>) async throws {
+    func intersect(gpu: GPU, rays: Buffer<Ray>, intersections: Buffer<Intersection>, indicator: Buffer<Bool>) async throws {
         print("genning")
         try! await gpu.execute {
             ComputeShader(
@@ -77,7 +77,7 @@ class TestIntersectionsIntersector: Intersector {
     }
 }
 
-class TestMPSIntersector: Intersector {
+class TestMPSIntersector: SequenceIntersector {
 //    var geometry: Buffer<Triangle>!
     var accelerationStructure: AcceleratedRayIntersector!
     var mats: Buffer<BasicMaterial>!
@@ -101,7 +101,7 @@ class TestMPSIntersector: Intersector {
         mats = Buffer(scene.materials as! [BasicMaterial], usage: .managed)
     }
     
-    func generateIntersections(
+    func intersect(
         gpu: GPU,
         rays: Buffer<Ray>,
         intersections: Buffer<Intersection>,

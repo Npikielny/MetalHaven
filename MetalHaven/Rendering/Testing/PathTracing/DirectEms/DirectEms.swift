@@ -8,9 +8,9 @@
 import Metal
 import MetalAbstract
 
-typealias DirectEms = PathTracingView<DirectEmsIntersector, DirectEmsIntersector>
+typealias DirectEms = SequencePathTracingView<DirectEmsIntersector, DirectEmsIntersector>
 
-class DirectEmsIntersector: Intersector, Integrator {
+class DirectEmsIntersector: SequenceIntersector, SequenceIntegrator {
     var maxIterations: Int? { 1 }
     
     let shader = ComputeShader(
@@ -105,7 +105,7 @@ class DirectEmsIntersector: Intersector, Integrator {
         totalAreaBuffer.reset([lightSampler.totalArea], usage: .sparse)
     }
     
-    func generateIntersections(gpu: GPU, rays: Buffer<Ray>, intersections: Buffer<Intersection>, indicator: Buffer<Bool>) async throws {
+    func intersect(gpu: GPU, rays: Buffer<Ray>, intersections: Buffer<Intersection>, indicator: Buffer<Bool>) async throws {
         indicator[0] = false
         if rng.generate() < 1 / 100 {
             print("new rng")
@@ -137,7 +137,7 @@ class DirectEmsIntersector: Intersector, Integrator {
         try await gpu.execute { shader }
     }
     
-    func integrate(gpu: GPU, state: (), rays: Buffer<Ray>, intersections: Buffer<Intersection>, intersector: Intersector, emitters: [Light], materials: [Material]) async throws {
+    func integrate(gpu: GPU, state: (), rays: Buffer<Ray>, intersections: Buffer<Intersection>, intersector: SequenceIntersector, emitters: [Light], materials: [Material]) async throws {
         
     }
 }

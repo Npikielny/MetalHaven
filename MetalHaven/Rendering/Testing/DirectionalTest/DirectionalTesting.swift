@@ -37,7 +37,7 @@ extension DirectionalTestingView {
     )
 }
 
-class DirectionalTestIntersector: Intersector {
+class DirectionalTestIntersector: SequenceIntersector {
     var geometryBuffer: Buffer<Sphere>! = nil
     
     required init() {}
@@ -49,7 +49,7 @@ class DirectionalTestIntersector: Intersector {
         geometryBuffer = Buffer(scene.geometry as! [Sphere], usage: .managed)
     }
     
-    func generateIntersections(gpu: GPU, rays: Buffer<Ray>, intersections: Buffer<Intersection>, indicator: Buffer<Bool>) async throws {
+    func intersect(gpu: GPU, rays: Buffer<Ray>, intersections: Buffer<Intersection>, indicator: Buffer<Bool>) async throws {
         try await gpu.execute {
             ComputeShader(
                 name: "directionalTesting",
@@ -72,7 +72,7 @@ class DirectionalTestIntersector: Intersector {
     }
 }
 
-class DirectionalTestIntegrator: Integrator {
+class DirectionalTestIntegrator: SequenceIntegrator {
     typealias State = ()
     
     var maxIterations: Int? = 8
@@ -84,7 +84,7 @@ class DirectionalTestIntegrator: Integrator {
         state: (),
         rays: Buffer<Ray>,
         intersections: Buffer<Intersection>,
-        intersector: Intersector,
+        intersector: SequenceIntersector,
         emitters: [Light],
         materials: [Material]
     ) async throws {

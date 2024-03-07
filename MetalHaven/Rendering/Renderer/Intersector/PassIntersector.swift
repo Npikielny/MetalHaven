@@ -9,7 +9,7 @@ import Metal
 import MetalAbstract
 
 // Only intersects with scene
-class PassIntersector: Intersector {
+class PassIntersector: SequenceIntersector {
     var geometryBuffer: VoidBuffer! = nil
     
     required init() {}
@@ -21,7 +21,7 @@ class PassIntersector: Intersector {
         
     }
     
-    func generateIntersections(
+    func intersect(
         gpu: GPU,
         rays: Buffer<Ray>,
         intersections: Buffer<Intersection>,
@@ -33,12 +33,12 @@ class PassIntersector: Intersector {
     
 }
 
-class PassIntegrator: Integrator {
+class PassIntegrator: SequenceIntegrator {
     required init() {}
     
     var maxIterations: Int? = 30
     
-    func integrate(gpu: GPU, state: (), rays: Buffer<Ray>, intersections: Buffer<Intersection>, intersector: Intersector, emitters: [Light], materials: [Material]) async throws {
+    func integrate(gpu: GPU, state: (), rays: Buffer<Ray>, intersections: Buffer<Intersection>, intersector: SequenceIntersector, emitters: [Light], materials: [Material]) async throws {
         
     }
     

@@ -49,7 +49,7 @@ Frame newShadingFrame(vector_float3 normal, vector_float3 ray) {
 Intersection trace(Ray ray,
                       constant char * scene,
                       constant GeometryType * types,
-                      constant uint & objectCount) {
+                      uint objectCount) {
     Intersection intersection;
     intersection.t = INFINITY;
     constant char * nextObject = scene;
@@ -115,7 +115,7 @@ float3 sampleLuminaryTriangle(Triangle triangle, float2 sample, thread float3 & 
     float3 v = triangle.v2 - triangle.v1;
     float3 u = triangle.v3 - triangle.v2;
     
-    n = normalize(cross(u, v));
+    n = normalize(cross(v, u));
     return point;
 }
 

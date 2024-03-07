@@ -12,8 +12,8 @@ protocol VideoScene {
     
     var camera: Camera { get }
     var scene: GeometryScene { get }
-    var intersector: any Intersector { get }
-    var integrator: any Integrator { get }
+    var intersector: any SequenceIntersector { get }
+    var integrator: any SequenceIntegrator { get }
 }
 
 protocol VideoManager {

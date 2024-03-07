@@ -19,10 +19,44 @@ struct RendererManager {
         frame: Int,
         presentSteps: (Texture, _ rescale: Float) async throws -> Void = { _, _ in }
     ) async throws -> Texture {
-        try await renderer.render(gpu: gpu, samples: samples, antialiased: antialiased, scene: scene, camera: camera, present: presentSteps)
+        let res = try await renderer.render(gpu: gpu, samples: samples, antialiased: antialiased, scene: scene, camera: camera, present: presentSteps)
+        print("Done rendering!")
+        return res
     }
     
-    private static func clearTextures(gpu: GPU, textures: [Texture]) async throws {
+    private static func sum(gpu: GPU, destinations: [Texture], rays: Buffer<Ray>, samples: Int) async throws {
+        try await gpu.execute {
+            ComputeShader(
+                name: "accumulate",
+                buffers: [
+                    rays,
+                    Buffer(name: "Samples", [UInt32(samples)], usage: .sparse)
+                ],
+                textures: destinations,
+                threadGroupSize: MTLSize(width: 8, height: 8, depth: 1),
+                dispatchSize: ThreadGroupDispatchWrapper()
+            )
+        }
+    }
+}
+
+extension ComputeShader.Function {
+    static let generateNullIntersections = ComputeShader.Function(name: "generateNullIntersections")
+}
+
+protocol Renderer {
+    func render(
+        gpu: GPU,
+        samples: Int,
+        antialiased: Bool,
+        scene: GeometryScene,
+        camera: Camera,
+        present: (Texture, _ rescale: Float) async throws -> Void
+    ) async throws -> Texture
+}
+
+extension Renderer {
+    static func clearTextures(gpu: GPU, textures: [Texture]) async throws {
         try await gpu.execute(pass: GPUPass(
             pass: textures.map {
                 RasterShader(
@@ -36,7 +70,7 @@ struct RendererManager {
         )
     }
     
-    private static func clearRaysAndIntersections(
+    static func clearRaysAndIntersections(
         gpu: GPU,
         size: SIMD2<Int>,
         rays: Buffer<Ray>,
@@ -79,51 +113,9 @@ struct RendererManager {
             )
         }
     }
-    
-    private static func sum(gpu: GPU, destinations: [Texture], rays: Buffer<Ray>, samples: Int) async throws {
-        try await gpu.execute {
-            ComputeShader(
-                name: "accumulate",
-                buffers: [
-                    rays,
-                    Buffer(name: "Samples", [UInt32(samples)], usage: .sparse)
-                ],
-                textures: destinations,
-                threadGroupSize: MTLSize(width: 8, height: 8, depth: 1),
-                dispatchSize: ThreadGroupDispatchWrapper()
-            )
-        }
-    }
 }
 
-protocol Renderer {
-    func render(
-        gpu: GPU,
-        samples: Int,
-        antialiased: Bool,
-        scene: GeometryScene,
-        camera: Camera,
-        present: (Texture, _ rescale: Float) async throws -> Void
-    ) async throws -> Texture
-}
-
-extension Renderer {
-    static func clearTextures(gpu: GPU, textures: [Texture]) async throws {
-        try await gpu.execute(pass: GPUPass(
-            pass: textures.map {
-                RasterShader(
-                    vertexShader: "getCornerVerts",
-                    fragmentShader: "clearTexture",
-                    passDescriptor: .future(texture: $0),
-                    texture: $0
-                ) // FIXME: Need to add some form of copying to minimize compilation time
-            },
-            completion: { _ in })
-        )
-    }
-}
-
-struct SequenceRenderer<T: Intersector, K: Integrator>: Renderer {
+struct SequenceRenderer<T: SequenceIntersector, K: SequenceIntegrator>: Renderer {
     var intersector: T
     var integrator: K
     
@@ -162,12 +154,12 @@ struct SequenceRenderer<T: Intersector, K: Integrator>: Renderer {
         
         for sample in 0..<samples {
             notConverged[0] = true
-            try await SequenceRenderer.clearRaysAndIntersections(gpu: gpu, size: size, rays: rays, rng: antialiased ? rng : nil, intersections: intersections, camera: camera)
+            try await Self.clearRaysAndIntersections(gpu: gpu, size: size, rays: rays, rng: antialiased ? rng : nil, intersections: intersections, camera: camera)
             
             var iterations = 0
             while (notConverged[0] ?? false && iterations < (integrator.maxIterations ?? Int.max)) {
                 notConverged[0] = false
-                try await intersector.generateIntersections(gpu: gpu, rays: rays, intersections: intersections, indicator: notConverged)
+                try await intersector.intersect(gpu: gpu, rays: rays, intersections: intersections, indicator: notConverged)
                 try await integrator.integrate(
                     gpu: gpu,
                     state: state,
@@ -187,50 +179,6 @@ struct SequenceRenderer<T: Intersector, K: Integrator>: Renderer {
         return destinations[0]
     }
     
-    private static func clearRaysAndIntersections(
-        gpu: GPU,
-        size: SIMD2<Int>,
-        rays: Buffer<Ray>,
-        rng: Generator?,
-        intersections: Buffer<Intersection>,
-        camera: Camera
-    ) async throws {
-        let dispatch = ThreadGroupDispatchWrapper { size, _ in
-            ThreadGroupDispatchWrapper.groupsForSize(
-                size: size,
-                dispatch: MTLSize(width: rays.count, height: 1, depth: 1)
-            )
-        }
-        
-        let offset: SIMD2<Float> = {
-            if let rng {
-                return sampleNormal(rng.generateVec2()) / 2
-            } else {
-                return .zero
-            }
-        }()
-        try await gpu.execute {
-            ComputeShader(
-                name: "generateRays",
-                buffers: [
-                    Buffer(name: "image size", [SIMD2<UInt32>(UInt32(size.x), UInt32(size.y))], usage: .sparse),
-                    rays,
-                    Buffer(name: "Camera Projection", [camera.projection], usage: .sparse),
-                    Buffer(name: "Camera Position", [camera.position], usage: .sparse),
-                    Buffer(name: "Offset", [offset], usage: .sparse)
-                ],
-                threadGroupSize: MTLSize(width: 8, height: 1, depth: 1),
-                dispatchSize: dispatch)
-            
-            ComputeShader(
-                name: "generateNullIntersections",
-                buffers: [intersections],
-                threadGroupSize: MTLSize(width: 8, height: 1, depth: 1),
-                dispatchSize: dispatch
-            )
-        }
-    }
-    
     private static func sum(gpu: GPU, destinations: [Texture], rays: Buffer<Ray>, samples: Int) async throws {
         try await gpu.execute {
             ComputeShader(
@@ -248,6 +196,8 @@ struct SequenceRenderer<T: Intersector, K: Integrator>: Renderer {
 }
 
 struct ContinualRenderer: Renderer {
+    var integrator: any ContinualIntegrator
+    var generator: any Generator
     func render(
         gpu: GPU,
         samples: Int,
@@ -256,8 +206,133 @@ struct ContinualRenderer: Renderer {
         camera: Camera,
         present: (Texture, Float) async throws -> Void
     ) async throws -> Texture {
-        Texture(format: .rgba16Float, width: 0, height: 0, storageMode: .managed, usage: .renderTarget)
+        let destination = Texture(
+            format: .rgba16Float,
+            width: camera.imageSize.x,
+            height: camera.imageSize.y,
+            storageMode: .managed,
+            usage: [.shaderRead, .shaderWrite, .renderTarget]
+        )
+        let display = destination.emptyCopy()
+        
+        try await Self.clearTextures(gpu: gpu, textures: [destination])
+        
+        let pixelCount = camera.imageSize.x * camera.imageSize.y
+        
+        let indicator = Buffer(name: "Indicator", [true], usage: .shared)
+        
+        let queries = (0..<integrator.intersectionsPerSample).map { _ in
+            (
+                Buffer(count: pixelCount, type: Ray.self),
+                Buffer(count: pixelCount, type: Intersection.self)
+            )
+        }
+        
+        for (rays, intersections) in queries {
+            try await Self.clearRaysAndIntersections(
+                gpu: gpu,
+                size: camera.imageSize,
+                rays: rays,
+                rng: generator,
+                intersections: intersections,
+                camera: camera
+            )
+        }
+        
+        let uniform = setup(generator: generator, scene: scene, camera: camera)
+        let raySamples = Buffer(count: pixelCount, type: UInt32.self)
+        
+        var iters = 0
+        
+        while indicator[0] ?? false {
+            iters += 1
+            try await integrator.step(
+                gpu: gpu,
+                queries: queries,
+                uniform: uniform,
+                sampleCounts: raySamples,
+                maxSamples: samples,
+                indicator: indicator,
+                accumulator: destination,
+                display: display
+            )
+//            print(raySamples[0])
+            
+            try await present(display, 2.0)
+            if iters % 100 == 0 {
+                print(iters)
+            }
+        }
+        try await present(destination, 2.0)
+        return destination
     }
     
-    
+}
+
+extension ContinualRenderer {
+    func setup(
+        generator: Generator,
+        scene: GeometryScene,
+        camera: Camera
+    ) -> ContinualIntegratorUniforms {
+        let uniform = ContinualIntegratorUniforms(generator: generator, camera: camera)
+        uniform.geometryTypes.reset(scene.geometry.map(\.geometryType), usage: .managed)
+        
+        uniform.geometry.reset { gpu -> (MTLBuffer, Int)? in
+            guard let buf = gpu.device.makeBuffer(
+                length: scene.geometry.map(\.stride).reduce(0, +),
+                options: .storageModeManaged
+            ) else { return nil }
+            
+            var offset = 0
+            for obj in scene.geometry {
+                offset += VoidBuffer.copy(geom: obj, ptr: buf.contents() + offset)
+            }
+            buf.didModifyRange(0..<buf.length)
+            
+            return (buf, scene.geometry.count)
+        }
+        
+        uniform.materials.reset { gpu -> (MTLBuffer, Int)? in
+            guard let buf = gpu.device.makeBuffer(
+                length: scene.materials.map(\.stride).reduce(0, +),
+                options: .storageModeManaged
+            ) else { return nil }
+            
+            var offset = 0
+            for mat in scene.materials {
+                offset += VoidBuffer.copy(mat: mat, ptr: buf.contents() + offset)
+            }
+            buf.didModifyRange(0..<buf.length)
+            
+            return (buf, scene.geometry.count)
+        }
+        
+        let descriptors: [MaterialDescription] = {
+            var out = [MaterialDescription]()
+            var total = 0
+            for i in scene.materials {
+                out.append(MaterialDescription(type: i.type, index: UInt32(total)))
+                total += i.stride
+            }
+            return out
+        }()
+        
+        uniform.matTypes.reset(descriptors, usage: .managed)
+        
+        uniform.samplers.reset(
+            uniform.samplers.generate(
+                rng: generator,
+                maxSeed: 1024,
+                count: camera.imageSize.x * camera.imageSize.y
+            ),
+            usage: .managed
+        )
+        
+        let lighting = LightingSampler(scene: scene)
+        uniform.areaLight.reset(lighting.sampler, usage: .managed)
+        uniform.totalArea.reset([lighting.totalArea], usage: .sparse)
+        
+        return uniform
+    }
 }

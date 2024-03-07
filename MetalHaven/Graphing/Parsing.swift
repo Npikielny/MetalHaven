@@ -8,12 +8,12 @@
 import Foundation
 
 class Parser {
-    typealias AST = (lhs: [Symbol], Character, rhs: [Symbol])
-    func valid(ast: AST) -> Bool {
-        let left = validExpression(ast.lhs)
-        let right = validExpression(ast.rhs)
+    typealias Statement = (lhs: [Symbol], eq: Character, rhs: [Symbol])
+    func valid(statement: Statement) -> Bool {
+        let left = validExpression(statement.lhs)
+        let right = validExpression(statement.rhs)
         let res = left && right
-        print(left, ast.lhs, right, ast.rhs)
+        print(left, statement.lhs, right, statement.rhs)
         return res
     }
     func validExpression(_ symbols: [Symbol]) -> Bool {
@@ -31,6 +31,9 @@ class Parser {
                           !symbols[index + 1].isOp else {
                         return false
                     }
+                case .function(_):
+                    guard index < symbols.count - 1, case .in = symbols[index + 1] else { return false }
+                    continue
                 case .expression(_, _):
                     continue
             }
@@ -70,7 +73,12 @@ class Parser {
                         term = .expression(.number, String(x))
                     }
                 case let x where x == "(":
-                    terms.append(term)
+                    if case let .expression(.variable, str) = term, let fn = Function.enumerate(str) {
+                        term = .function(fn)
+                        terms.append(term)
+                    } else {
+                        terms.append(term)
+                    }
                     if needsMult(last: term) {
                         terms.append(.operation("*"))
                     }
@@ -93,7 +101,7 @@ class Parser {
     
     var equalities: [Character] = ["=", "<", ">", "≤", "≥"]
     
-    func parseStatement(statement: String) throws -> AST {
+    func parseStatement(statement: String) throws -> Statement {
         for i in equalities {
             if let idx = statement.lastIndex(of: i) {
                 let before = String(statement[..<idx])
@@ -124,6 +132,7 @@ class Parser {
         case out
         case expression(Term, String)
         case operation(Character)
+        case function(Function)
         
         var description: String {
             switch self {
@@ -136,6 +145,7 @@ class Parser {
                         case .expression:
                             "exp: \(string)"
                     }
+                case let .function(fn): "\(fn)"
                 case let .operation(character):
                     "op: " + String(character)
                 case .in: "("
@@ -161,6 +171,39 @@ class Parser {
     
     var operations: [Character] = ["*", "-", "/", "+"]
     
+    enum DefaultFunction: CaseIterable {
+        case sin
+        case cos
+        case tan
+        case log
+    }
+    
+    enum Function: CustomStringConvertible {
+        case defaultFunctions(DefaultFunction)
+        case custom(String)
+        
+        static var customFunctions = [String]()
+        
+        static func enumerate(_ str: String) -> Function? {
+            if let fn = customFunctions.first { $0 == str } {
+                return .custom(fn)
+            }
+            for i in DefaultFunction.allCases {
+                if "\(i)" == str {
+                    return .defaultFunctions(i)
+                }
+            }
+            return nil
+        }
+        
+        var description: String {
+            switch self {
+                case let .custom(fn): fn
+                case let .defaultFunctions(def): "\(def)"
+            }
+        }
+    }
+    
     func retextualize(symbols: [Symbol]) -> String {
         var out = ""
         for symbol in symbols {
@@ -169,12 +212,21 @@ class Parser {
                     out += "("
                 case .out:
                     out += ")"
-                case .expression(let term, let string):
+                case .expression(_, let string):
                     out += string
+                case .function(let fn):
+                    out += "\(fn)"
                 case .operation(let character):
                     out += String(character)
             }
         }
         return out
     }
+    
+//    enum Token {
+//        case expression(Expression)
+//        case binaryOperation(String)
+//    }
+//
+//    func tokenize
 }

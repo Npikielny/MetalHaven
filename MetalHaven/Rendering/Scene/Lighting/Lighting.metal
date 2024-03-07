@@ -48,3 +48,16 @@ vector_float3 getReflectance(MaterialDescription desc, constant char * ptr) {
         }
     }
 }
+
+BSDF matSamplingStrategy(MaterialType type) {
+    switch (type) {
+        case MICROFACET: {}
+        case BASIC: {
+            return SOLID_ANGLE;
+        }
+        case MIRROR: {}
+        case DIELECTRIC: {
+            return DISCRETE;
+        }
+    }
+}
