@@ -30,6 +30,7 @@ void pathMatsSingle(uint tid [[thread_position_in_grid]],
     device Intersection & intersection = intersections[tid];
     
     switch (ray.state) {
+        case WAITING: { ray.state = FINISHED; }
         case FINISHED: return;
         case OLD: {
             PathSection section = matSample(ray, intersection, materials, matTypes, scene, types, objectCount, samplers[tid]);

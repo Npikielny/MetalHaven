@@ -8,6 +8,7 @@
 #ifndef Lighting_h
 #define Lighting_h
 
+#import "../Core3D.h"
 #include <simd/simd.h>
 
 enum LightingType {
@@ -80,4 +81,15 @@ typedef enum BSDF {
 } BSDF;
 
 BSDF matSamplingStrategy(enum MaterialType type);
+
+typedef struct LuminarySample {
+    unsigned int lightId;
+    vector_float3 p;
+    vector_float3 n;
+    vector_float3 emission;
+} LuminarySample;
+
+LuminarySample sampleLuminaryTriangle(Triangle triangle, vector_float2 sample);
+LuminarySample sampleLuminarySphere(Sphere sphere, vector_float2 sample);
+LuminarySample sampleLuminarySquare(Square square, vector_float2 sample);
 #endif /* Lighting_h */

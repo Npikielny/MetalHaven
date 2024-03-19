@@ -11,6 +11,7 @@
 		300893BA2A93FA8500176899 /* Diffuse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 300893B92A93FA8500176899 /* Diffuse.swift */; };
 		300893BC2A93FB1A00176899 /* Sampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 300893BB2A93FB1A00176899 /* Sampler.swift */; };
 		300893BF2A93FB5A00176899 /* Warp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 300893BE2A93FB5A00176899 /* Warp.swift */; };
+		30172EB32B9BA0F700833A4F /* Bidir.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30172EB22B9BA0F700833A4F /* Bidir.swift */; };
 		301B375A2ADDD25D003EE9FC /* PathTracingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 301B37592ADDD25D003EE9FC /* PathTracingView.swift */; };
 		301B375C2ADDD436003EE9FC /* PathMats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 301B375B2ADDD436003EE9FC /* PathMats.swift */; };
 		301B375E2ADDD5B2003EE9FC /* PathMats.metal in Sources */ = {isa = PBXBuildFile; fileRef = 301B375D2ADDD5B2003EE9FC /* PathMats.metal */; };
@@ -34,6 +35,7 @@
 		305807332ACC67F80079B6F4 /* RendererManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 305807322ACC67F80079B6F4 /* RendererManager.swift */; };
 		305807352ACC684D0079B6F4 /* EncodableConformances.swift in Sources */ = {isa = PBXBuildFile; fileRef = 305807342ACC684D0079B6F4 /* EncodableConformances.swift */; };
 		305807372ACC72ED0079B6F4 /* VideoScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 305807362ACC72ED0079B6F4 /* VideoScene.swift */; };
+		30600D982BA90DAC00F111A7 /* HybridBidir.metal in Sources */ = {isa = PBXBuildFile; fileRef = 30600D972BA90DAC00F111A7 /* HybridBidir.metal */; };
 		306474CB2B7C2180002E3DFA /* PathMatsSingle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 306474CA2B7C2180002E3DFA /* PathMatsSingle.swift */; };
 		306474CD2B7C21A9002E3DFA /* PathMatsSingle.metal in Sources */ = {isa = PBXBuildFile; fileRef = 306474CC2B7C21A9002E3DFA /* PathMatsSingle.metal */; };
 		306912152B51627600D1EA58 /* Tracing.c in Sources */ = {isa = PBXBuildFile; fileRef = 306912142B51627600D1EA58 /* Tracing.c */; };
@@ -69,6 +71,9 @@
 		30A786FF2B41753F008D4EBF /* BasicTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30A786FE2B41753F008D4EBF /* BasicTypes.swift */; };
 		30A787012B417575008D4EBF /* VectorTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30A787002B417575008D4EBF /* VectorTypes.swift */; };
 		30A787032B41758A008D4EBF /* Binops.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30A787022B41758A008D4EBF /* Binops.swift */; };
+		30BC520B2BA243A60011D2E8 /* MPSIntersector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30BC520A2BA243A60011D2E8 /* MPSIntersector.swift */; };
+		30BC520D2BA244060011D2E8 /* TriangleIntersection.metal in Sources */ = {isa = PBXBuildFile; fileRef = 30BC520C2BA244060011D2E8 /* TriangleIntersection.metal */; };
+		30BC520F2BA2515F0011D2E8 /* Bidir.metal in Sources */ = {isa = PBXBuildFile; fileRef = 30BC520E2BA2515F0011D2E8 /* Bidir.metal */; };
 		30BE15B82B62DB30001870BA /* PathEms.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30BE15B72B62DB30001870BA /* PathEms.swift */; };
 		30BE15BA2B62DB82001870BA /* pathEms.metal in Sources */ = {isa = PBXBuildFile; fileRef = 30BE15B92B62DB82001870BA /* pathEms.metal */; };
 		30D8E24D2B4BD5660037670A /* Sampling.c in Sources */ = {isa = PBXBuildFile; fileRef = 30D8E24C2B4BD5660037670A /* Sampling.c */; };
@@ -76,6 +81,11 @@
 		30D8E2522B4BDEBD0037670A /* TestSampling.metal in Sources */ = {isa = PBXBuildFile; fileRef = 30D8E2512B4BDEBD0037670A /* TestSampling.metal */; };
 		30D8E2592B4BE5690037670A /* CPUSampling.c in Sources */ = {isa = PBXBuildFile; fileRef = 30D8E2582B4BE5690037670A /* CPUSampling.c */; };
 		30D8E25B2B4BE6180037670A /* MetalSampling.metal in Sources */ = {isa = PBXBuildFile; fileRef = 30D8E25A2B4BE6180037670A /* MetalSampling.metal */; };
+		30E167F12BA5460C003FD9D6 /* 2DSim.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30E167F02BA5460C003FD9D6 /* 2DSim.swift */; };
+		30E167F42BA54835003FD9D6 /* 2DSim.metal in Sources */ = {isa = PBXBuildFile; fileRef = 30E167F32BA54835003FD9D6 /* 2DSim.metal */; };
+		30F711DC2BA8C42A0043E15B /* HybridBidir.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30F711DB2BA8C42A0043E15B /* HybridBidir.swift */; };
+		30F711DE2BA8C4D50043E15B /* Lighting.c in Sources */ = {isa = PBXBuildFile; fileRef = 30F711DD2BA8C4D50043E15B /* Lighting.c */; };
+		30F711E22BA8FEEA0043E15B /* Tracing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30F711E12BA8FEEA0043E15B /* Tracing.swift */; };
 		30FA51A32ADA485400E365A4 /* SequenceIntersector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30FA51A22ADA485400E365A4 /* SequenceIntersector.swift */; };
 		30FA51A52ADA492200E365A4 /* PassIntersector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30FA51A42ADA492200E365A4 /* PassIntersector.swift */; };
 		30FA51A72ADA4D0200E365A4 /* RayRasterShader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30FA51A62ADA4D0200E365A4 /* RayRasterShader.swift */; };
@@ -114,6 +124,7 @@
 		300893B92A93FA8500176899 /* Diffuse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Diffuse.swift; sourceTree = "<group>"; };
 		300893BB2A93FB1A00176899 /* Sampler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sampler.swift; sourceTree = "<group>"; };
 		300893BE2A93FB5A00176899 /* Warp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Warp.swift; sourceTree = "<group>"; };
+		30172EB22B9BA0F700833A4F /* Bidir.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bidir.swift; sourceTree = "<group>"; };
 		301B37592ADDD25D003EE9FC /* PathTracingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathTracingView.swift; sourceTree = "<group>"; };
 		301B375B2ADDD436003EE9FC /* PathMats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathMats.swift; sourceTree = "<group>"; };
 		301B375D2ADDD5B2003EE9FC /* PathMats.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = PathMats.metal; sourceTree = "<group>"; };
@@ -139,6 +150,7 @@
 		305807322ACC67F80079B6F4 /* RendererManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RendererManager.swift; sourceTree = "<group>"; };
 		305807342ACC684D0079B6F4 /* EncodableConformances.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncodableConformances.swift; sourceTree = "<group>"; };
 		305807362ACC72ED0079B6F4 /* VideoScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoScene.swift; sourceTree = "<group>"; };
+		30600D972BA90DAC00F111A7 /* HybridBidir.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = HybridBidir.metal; sourceTree = "<group>"; };
 		306474CA2B7C2180002E3DFA /* PathMatsSingle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathMatsSingle.swift; sourceTree = "<group>"; };
 		306474CC2B7C21A9002E3DFA /* PathMatsSingle.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = PathMatsSingle.metal; sourceTree = "<group>"; };
 		306912142B51627600D1EA58 /* Tracing.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Tracing.c; sourceTree = "<group>"; };
@@ -184,6 +196,9 @@
 		30A786FE2B41753F008D4EBF /* BasicTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasicTypes.swift; sourceTree = "<group>"; };
 		30A787002B417575008D4EBF /* VectorTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VectorTypes.swift; sourceTree = "<group>"; };
 		30A787022B41758A008D4EBF /* Binops.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Binops.swift; sourceTree = "<group>"; };
+		30BC520A2BA243A60011D2E8 /* MPSIntersector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPSIntersector.swift; sourceTree = "<group>"; };
+		30BC520C2BA244060011D2E8 /* TriangleIntersection.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = TriangleIntersection.metal; sourceTree = "<group>"; };
+		30BC520E2BA2515F0011D2E8 /* Bidir.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Bidir.metal; sourceTree = "<group>"; };
 		30BE15B72B62DB30001870BA /* PathEms.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathEms.swift; sourceTree = "<group>"; };
 		30BE15B92B62DB82001870BA /* pathEms.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = pathEms.metal; sourceTree = "<group>"; };
 		30C196E92B85302800C4F0A3 /* RayTracing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RayTracing.h; sourceTree = "<group>"; };
@@ -195,6 +210,14 @@
 		30D8E2582B4BE5690037670A /* CPUSampling.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = CPUSampling.c; sourceTree = "<group>"; };
 		30D8E25A2B4BE6180037670A /* MetalSampling.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = MetalSampling.metal; sourceTree = "<group>"; };
 		30D8E25C2B4BE6310037670A /* MetalSampling.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = MetalSampling.hpp; sourceTree = "<group>"; };
+		30E167F02BA5460C003FD9D6 /* 2DSim.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 2DSim.swift; sourceTree = "<group>"; };
+		30E167F22BA54692003FD9D6 /* Fluid2D.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Fluid2D.h; sourceTree = "<group>"; };
+		30E167F32BA54835003FD9D6 /* 2DSim.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = 2DSim.metal; sourceTree = "<group>"; };
+		30F711DB2BA8C42A0043E15B /* HybridBidir.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HybridBidir.swift; sourceTree = "<group>"; };
+		30F711DD2BA8C4D50043E15B /* Lighting.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Lighting.c; sourceTree = "<group>"; };
+		30F711DF2BA8F42E0043E15B /* Core3D.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Core3D.h; sourceTree = "<group>"; };
+		30F711E02BA8F5280043E15B /* Core3DMetal.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Core3DMetal.hpp; sourceTree = "<group>"; };
+		30F711E12BA8FEEA0043E15B /* Tracing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tracing.swift; sourceTree = "<group>"; };
 		30FA51A22ADA485400E365A4 /* SequenceIntersector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SequenceIntersector.swift; sourceTree = "<group>"; };
 		30FA51A42ADA492200E365A4 /* PassIntersector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassIntersector.swift; sourceTree = "<group>"; };
 		30FA51A62ADA4D0200E365A4 /* RayRasterShader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RayRasterShader.swift; sourceTree = "<group>"; };
@@ -250,6 +273,8 @@
 				302D6BC52A6884AC006D62A7 /* Camera.swift */,
 				3058072A2ACC65880079B6F4 /* Tracing */,
 				309C236A2A52258300BA7B73 /* Geometry */,
+				30F711DF2BA8F42E0043E15B /* Core3D.h */,
+				30F711E02BA8F5280043E15B /* Core3DMetal.hpp */,
 			);
 			path = Scene;
 			sourceTree = "<group>";
@@ -329,6 +354,8 @@
 		30370E782AE0C1D200C56C8F /* TestIntersectFunction */ = {
 			isa = PBXGroup;
 			children = (
+				30BC520A2BA243A60011D2E8 /* MPSIntersector.swift */,
+				30BC520C2BA244060011D2E8 /* TriangleIntersection.metal */,
 				30370E792AE0C1E200C56C8F /* TestIntersections.swift */,
 				30370E7B2AE0C1F000C56C8F /* TestIntersections.metal */,
 			);
@@ -359,6 +386,10 @@
 				30861B482B8BDC860070831F /* PMats.metal */,
 				30861B4A2B8BE4530070831F /* PEms.swift */,
 				30861B4C2B8BE4600070831F /* PEms.metal */,
+				30172EB22B9BA0F700833A4F /* Bidir.swift */,
+				30F711DB2BA8C42A0043E15B /* HybridBidir.swift */,
+				30600D972BA90DAC00F111A7 /* HybridBidir.metal */,
+				30BC520E2BA2515F0011D2E8 /* Bidir.metal */,
 			);
 			path = ContinualRenderers;
 			sourceTree = "<group>";
@@ -380,6 +411,7 @@
 			children = (
 				3058072B2ACC65A40079B6F4 /* Tracing.h */,
 				306912142B51627600D1EA58 /* Tracing.c */,
+				30F711E12BA8FEEA0043E15B /* Tracing.swift */,
 				309201CC2B54B9830099D34F /* MetalTracing.hpp */,
 				306912162B5162C900D1EA58 /* Tracing.metal */,
 				3058072C2ACC65B10079B6F4 /* Ray.c */,
@@ -421,6 +453,7 @@
 			isa = PBXGroup;
 			children = (
 				309C23742A52283800BA7B73 /* Lighting.h */,
+				30F711DD2BA8C4D50043E15B /* Lighting.c */,
 				306E147A2B5B4073002F6063 /* MetalLighting.hpp */,
 				30705D322B4FC9E500F1604B /* Lighting.metal */,
 				3069121F2B533A3200D1EA58 /* LightingSampler.swift */,
@@ -474,6 +507,7 @@
 			children = (
 				309C23392A52253100BA7B73 /* MetalHavenApp.swift */,
 				309C233B2A52253100BA7B73 /* ContentView.swift */,
+				30E167ED2BA545F5003FD9D6 /* Physics */,
 				303547A42B7D1942002E6C6B /* Rendering */,
 				303547A52B7D1950002E6C6B /* Graphing */,
 				30FA51B32ADB469400E365A4 /* Exposables */,
@@ -550,6 +584,32 @@
 				30D8E2512B4BDEBD0037670A /* TestSampling.metal */,
 			);
 			path = TestSampling;
+			sourceTree = "<group>";
+		};
+		30E167ED2BA545F5003FD9D6 /* Physics */ = {
+			isa = PBXGroup;
+			children = (
+				30E167EE2BA545FE003FD9D6 /* FluidSimulations */,
+			);
+			path = Physics;
+			sourceTree = "<group>";
+		};
+		30E167EE2BA545FE003FD9D6 /* FluidSimulations */ = {
+			isa = PBXGroup;
+			children = (
+				30E167EF2BA54604003FD9D6 /* 2D */,
+			);
+			path = FluidSimulations;
+			sourceTree = "<group>";
+		};
+		30E167EF2BA54604003FD9D6 /* 2D */ = {
+			isa = PBXGroup;
+			children = (
+				30E167F02BA5460C003FD9D6 /* 2DSim.swift */,
+				30E167F32BA54835003FD9D6 /* 2DSim.metal */,
+				30E167F22BA54692003FD9D6 /* Fluid2D.h */,
+			);
+			path = 2D;
 			sourceTree = "<group>";
 		};
 		30FA51A12ADA484400E365A4 /* Intersector */ = {
@@ -764,6 +824,7 @@
 				300893B72A93F97600176899 /* Material.swift in Sources */,
 				300893BA2A93FA8500176899 /* Diffuse.swift in Sources */,
 				30370E7C2AE0C1F000C56C8F /* TestIntersections.metal in Sources */,
+				30F711E22BA8FEEA0043E15B /* Tracing.swift in Sources */,
 				309201CA2B54B80E0099D34F /* PathMis.metal in Sources */,
 				306E147E2B5D9CEF002F6063 /* Bidirectional.swift in Sources */,
 				30370E772AE0B3CC00C56C8F /* Frame.swift in Sources */,
@@ -777,33 +838,41 @@
 				305807272ACC65220079B6F4 /* Integrator.swift in Sources */,
 				30FA51A32ADA485400E365A4 /* SequenceIntersector.swift in Sources */,
 				301B375C2ADDD436003EE9FC /* PathMats.swift in Sources */,
+				30E167F12BA5460C003FD9D6 /* 2DSim.swift in Sources */,
 				30D8E2522B4BDEBD0037670A /* TestSampling.metal in Sources */,
 				30FE256E2B414C0E005E3389 /* ShaderBuilder.swift in Sources */,
 				301B375E2ADDD5B2003EE9FC /* PathMats.metal in Sources */,
 				30FA51A92ADA505300E365A4 /* Intersect.metal in Sources */,
 				30370E7F2AE0D13100C56C8F /* BoxScene.swift in Sources */,
+				30F711DE2BA8C4D50043E15B /* Lighting.c in Sources */,
 				303547A72B7D195F002E6C6B /* Grapher.swift in Sources */,
 				308BEEE12B7D3024003952ED /* Grapher.metal in Sources */,
 				3058072D2ACC65B10079B6F4 /* Ray.c in Sources */,
 				306474CD2B7C21A9002E3DFA /* PathMatsSingle.metal in Sources */,
 				30FA51B82ADB4B4A00E365A4 /* DirectionalTestingView.swift in Sources */,
 				30861B4B2B8BE4530070831F /* PEms.swift in Sources */,
+				30BC520B2BA243A60011D2E8 /* MPSIntersector.swift in Sources */,
 				30FA51C22ADB510500E365A4 /* RayTracerScene.swift in Sources */,
 				30FA51A52ADA492200E365A4 /* PassIntersector.swift in Sources */,
 				309C233C2A52253100BA7B73 /* ContentView.swift in Sources */,
+				30BC520D2BA244060011D2E8 /* TriangleIntersection.metal in Sources */,
 				304892632ADF713100938177 /* ThreadManager.swift in Sources */,
+				30E167F42BA54835003FD9D6 /* 2DSim.metal in Sources */,
 				30D8E2592B4BE5690037670A /* CPUSampling.c in Sources */,
+				30BC520F2BA2515F0011D2E8 /* Bidir.metal in Sources */,
 				30FA51BE2ADB4DDB00E365A4 /* RayTracer.swift in Sources */,
 				30861B492B8BDC860070831F /* PMats.metal in Sources */,
 				306474CB2B7C2180002E3DFA /* PathMatsSingle.swift in Sources */,
 				306E14802B5D9D82002F6063 /* Bidirectional.metal in Sources */,
 				3069121C2B5289A900D1EA58 /* DirectEms.metal in Sources */,
 				30FA51A72ADA4D0200E365A4 /* RayRasterShader.swift in Sources */,
+				30F711DC2BA8C42A0043E15B /* HybridBidir.swift in Sources */,
 				30A787032B41758A008D4EBF /* Binops.swift in Sources */,
 				301B375A2ADDD25D003EE9FC /* PathTracingView.swift in Sources */,
 				3096F0D52B4480D200BECC2D /* VoidBufferWrapper.swift in Sources */,
 				30861B472B8BDC7B0070831F /* PMats.swift in Sources */,
 				302D6BC62A6884AC006D62A7 /* Camera.swift in Sources */,
+				30172EB32B9BA0F700833A4F /* Bidir.swift in Sources */,
 				305807352ACC684D0079B6F4 /* EncodableConformances.swift in Sources */,
 				306912202B533A3200D1EA58 /* LightingSampler.swift in Sources */,
 				303960262B86DC19003543FA /* PMis.metal in Sources */,
@@ -821,6 +890,7 @@
 				3096F0D32B442CA200BECC2D /* RawBufferTest.metal in Sources */,
 				303547A32B7D16E3002E6C6B /* Struct.swift in Sources */,
 				30D8E2502B4BDE620037670A /* TestSampling.swift in Sources */,
+				30600D982BA90DAC00F111A7 /* HybridBidir.metal in Sources */,
 				309C233A2A52253100BA7B73 /* MetalHavenApp.swift in Sources */,
 				30A786FF2B41753F008D4EBF /* BasicTypes.swift in Sources */,
 				309201C82B54B72C0099D34F /* PathMis.swift in Sources */,

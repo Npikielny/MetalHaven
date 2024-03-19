@@ -244,6 +244,8 @@ struct ContinualRenderer: Renderer {
         
         var iters = 0
         
+        integrator.initialize(scene: scene, imageSize: camera.imageSize)
+        
         while indicator[0] ?? false {
             iters += 1
             try await integrator.step(
@@ -258,7 +260,7 @@ struct ContinualRenderer: Renderer {
             )
 //            print(raySamples[0])
             
-            try await present(display, 2.0)
+            try await present(display, 1.0)
             if iters % 100 == 0 {
                 print(iters)
             }
@@ -330,7 +332,7 @@ extension ContinualRenderer {
         )
         
         let lighting = LightingSampler(scene: scene)
-        uniform.areaLight.reset(lighting.sampler, usage: .managed)
+        uniform.areaLight.reset(lighting.lights, usage: .managed)
         uniform.totalArea.reset([lighting.totalArea], usage: .sparse)
         
         return uniform

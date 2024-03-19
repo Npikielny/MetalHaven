@@ -20,14 +20,13 @@ void generateShadowRay(Ray ray,
                        constant float & totalArea
                        ) {
     if (matSamplingStrategy(matTypes[intersection.materialId].type) == SOLID_ANGLE) {
-        thread float3 && n = 0.;
-        float3 l = sampleLuminaries(lights, totalArea, sampler, scene, types, n);
-        float3 dir = normalize(l - intersection.p);
+        LuminarySample l = sampleLuminaries(lights, totalArea, sampler, scene, types);
+        float3 dir = normalize(l.p - intersection.p);
         shadowRay.origin = intersection.p;
         shadowRay.direction = dir;
-        float dist = distance(intersection.p, l);
+        float dist = distance(intersection.p, l.p);
         shadowRay.expected = dist;
-        shadowRay.throughput = ray.throughput * max(0.f, dot(-dir, n)) * abs(dot(dir, intersection.n)) / (dist * dist) * totalArea;
+        shadowRay.throughput = ray.throughput * max(0.f, dot(-dir, l.n)) * abs(dot(dir, intersection.n)) / (dist * dist) * totalArea;
         shadowRay.state = TRACING;
     } else {
         shadowRay.expected = -1;
@@ -58,7 +57,14 @@ void pathEmsIntegrator(uint tid [[thread_position_in_grid]],
     constant Intersection & shadowTest = shadowTests[tid];
     device HaltonSampler & sampler = samplers[tid];
     switch (ray.state) {
-        case FINISHED: { return; }
+        case WAITING: { ray.state = FINISHED; }
+        case FINISHED: {
+            if (shadowRay.expected > 0 && shadowTest.t < INFINITY && (abs(shadowTest.t - shadowRay.expected) < 1e-4)) {
+                float3 emission = getEmission(matTypes[shadowTest.materialId], materials);
+                ray.result += emission * shadowRay.throughput;
+            }
+            return;
+        }
         case TRACING: {
             if (dot(-ray.direction, intersection.n) > 0) {
                 float3 emission = getEmission(matTypes[intersection.materialId], materials);
@@ -92,6 +98,7 @@ void pathEmsIntegrator(uint tid [[thread_position_in_grid]],
             if (generateSample(sampler) > cont) {
                 ray.state = FINISHED;
                 shadowRay.state = FINISHED;
+                shadowRay.expected = -1;
                 return;
             }
             

@@ -31,8 +31,9 @@ Intersection planeIntersection(Triangle triangle, Ray ray) {
     float t = dot(triangle.v1 - ray.origin, n) / woN;
     if (t < 0)
         return i;
-    
-//    n = -woN > 0 ? n : -n;
+    if (triangle.reversible == REVERSIBLE) {
+        n = -woN > 0 ? n : -n;
+    }
     
     float3 forward = normalize(triangle.v2 - triangle.v1);
     f = newFrame(n, forward, normalize(cross(n, forward)));
@@ -67,4 +68,21 @@ Intersection triangleIntersection(Triangle triangle, Ray ray) {
     
     i.t = INFINITY;
     return i;
+}
+
+Intersection squareIntersection(Triangle square, Ray ray) {
+    Intersection success = planeIntersection(square, ray);
+    
+    float3 e1 = square.v2 - square.v1;
+    float3 e2 = square.v3 - square.v1;
+    float3 ep = success.p - square.v1;
+    float t1 = dot(ep, e1);
+    float t2 = dot(ep, e2);
+    if (t1 >= 0 && t1 <= dot(e1, e1) && t2 >= 0 && t2 <= dot(e2, e2))
+        return success;
+//    if (abs(t1 - 0.5) < 0.5 /*&& abs(dot(ep, e2) / length(e2) - 0.5) < 0.5*/) {
+//        return success;
+//    }
+    success.t = INFINITY;
+    return success;
 }

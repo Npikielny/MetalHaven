@@ -12,25 +12,6 @@
 using namespace metal;
 using namespace raytracing;
 
-//Intersection intersectionForTriangle(Triangle triangle, Ray ray) {
-//    float3 v1 = triangle.v2 - triangle.v1;
-//    float3 v2 = triangle.v3 - triangle.v1;
-//    float3 n = normalize(cross(v1, v2));
-//    float woN = dot(n, ray.direction);
-//    Intersection i = createIntersection(INFINITY, 0, 0, 0, newFrame(0, 0, 0));
-//    if (woN == 0)
-//        return i;
-//    float t = dot(triangle.v1 - ray.origin, n) / woN;
-//    if (t < 0)
-//        return i;
-//    
-//    n = -woN > 0 ? n : -n;
-//    
-//    float3 forward = triangle.v2 - triangle.v1;
-//    Frame f = newFrame(n, forward, cross(n, forward));
-//    return createIntersection(t, ray.origin + ray.direction * t, n, triangle.material, f);
-//}
-
 [[kernel]]
 void testIntersections(uint tid [[thread_position_in_grid]],
                        device Ray * rays,

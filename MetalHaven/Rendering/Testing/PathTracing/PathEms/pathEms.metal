@@ -31,6 +31,7 @@ void pathEms(uint tid [[thread_position_in_grid]],
     device Intersection & intersection = intersections[tid];
     
     switch (ray.state) {
+        case WAITING: { ray.state = FINISHED; }
         case FINISHED: { return; }
         case TRACING: {
             intersection = trace(ray, scene, types, objectCount);
@@ -50,12 +51,12 @@ void pathEms(uint tid [[thread_position_in_grid]],
             thread float3 && n = 0.;
             PathSection p = matSample(ray, intersection, materials, matTypes, scene, types, objectCount, sampler);
             if (p.bsdf == SOLID_ANGLE) {
-                float3 l = sampleLuminaries(lights, totalArea, sampler, scene, types, n);
-                float3 dir = normalize(l - intersection.p);
+                LuminarySample l = sampleLuminaries(lights, totalArea, sampler, scene, types);
+                float3 dir = normalize(l.p - intersection.p);
                 if (dot(-ray.direction, intersection.n) * dot(dir, intersection.n) > 0 && dot(-dir, n) > 0) {
                     Ray shadowRay = createRay(intersection.p + dir * 1e-4, dir);
                     Intersection shadow = trace(shadowRay, scene, types, objectCount);
-                    if (abs(shadow.t - distance(shadowRay.origin, l)) < 1e-4) {
+                    if (abs(shadow.t - distance(shadowRay.origin, l.p)) < 1e-4) {
                         float attenuation = max(0.f, -dot(dir, n)) * abs(dot(intersection.n, dir)) / shadow.t / shadow.t;
                         ray.result += ray.throughput * getEmission(matTypes[shadow.materialId], materials) * totalArea * attenuation;
                     }

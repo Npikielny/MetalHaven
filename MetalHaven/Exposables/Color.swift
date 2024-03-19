@@ -67,35 +67,3 @@ public struct EColor: Exposable {
     
     
 }
-
-//
-//struct Color: Exposable {
-//    var wrapped: Vec3 {
-//        didSet {
-//            wrapped = normalize(wrapped)
-//        }
-//    }
-//    
-//    var color: Vec3 {
-//        get { wrapped }
-//        set { wrapped = newValue }
-//    }
-//    
-//    typealias Settings = ()
-//    
-//    struct Interface: ExposableInterface {
-//        typealias ParameterType = Color
-//        
-//        var title: String?
-//        var wrappedValue: Expose<Color>
-//        
-//        init(_ settings: ()?, title: String?, wrappedValue: Expose<Color>) {
-//            self.title = title
-//            self.wrappedValue = wrappedValue
-//        }
-//        
-//        var body: some View {
-//            NumberField(range: (0.0..1.0), title: "Red", value: wrappedValue.)
-//        }
-//    }
-//}

@@ -57,6 +57,12 @@ protocol ContinualIntegrator: Integrator, Intersector {
     var intersectionsPerSample: Int { get }
     // Integration
     var integrator: ComputeShader.Function { get }
+    var supplementaryBuffers: [any ErasedBuffer] { get }
+}
+
+extension ContinualIntegrator {
+    // Extra buffers for integration
+    var supplementaryBuffers: [any ErasedBuffer] { [] }
 }
 
 struct ContinualIntegratorUniforms {
@@ -132,8 +138,8 @@ extension ContinualIntegrator {
                     uniforms.materials,
                     uniforms.samplers,
                     uniforms.areaLight,
-                    uniforms.totalArea,
-                ],
+                    uniforms.totalArea
+                ] + supplementaryBuffers,
                 threadGroupSize: MTLSize(width: 8, height: 1, depth: 1),
                 dispatchSize: ThreadGroupDispatchWrapper { size, resources in
                     let rayBuffer: any ErasedBuffer = resources.allBuffers[0][1]

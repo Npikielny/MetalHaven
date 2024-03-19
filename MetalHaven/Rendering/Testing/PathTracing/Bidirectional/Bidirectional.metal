@@ -120,13 +120,14 @@ void bidirectional(uint tid [[thread_position_in_grid]],
     thread float && sample = generateSample(sampler);
     uint lightIndex = sampleLuminarySet(lights, totalArea, sample);
     AreaLight light = lights[lightIndex];
-    thread float3 && n = 0.;
-    float3 l = sampleLuminary(light, sampler, scene, types, n);
+//    thread float3 && n = 0.;
+//    float3 l = sampleLuminary(light, sampler, scene, types, n);
+    LuminarySample l = sampleLuminary(light, sampler, scene, types);
     ray.throughput *= totalArea;
     
     float3 dir = sampleSphere(generateVec(sampler));
     ray.throughput /= spherePdf(dir);
-    if (dot(dir, n) < 0.1)
+    if (dot(dir, l.n) < 0.1)
         return;
     
 //    Intersection lightBounce = trace(createRay(l + dir * 1e-4, dir), scene, types, objectCount);
@@ -141,8 +142,8 @@ void bidirectional(uint tid [[thread_position_in_grid]],
 //        ray.result += light.color * ray.throughput;// / shadow.t / shadow.t;
 //    }
     
-    Intersection first = trace(createRay(l + dir * 1e-4, dir), scene, types, objectCount);
-    ray.throughput *= max(dot(dir, n), 0.f) * abs(dot(dir, first.n)) / (first.t * first.t);
+    Intersection first = trace(createRay(l.p + dir * 1e-4, dir), scene, types, objectCount);
+    ray.throughput *= max(dot(dir, l.n), 0.f) * abs(dot(dir, first.n)) / (first.t * first.t);
     
     float3 connect = normalize(first.p - intersection.p);
     if (isValid(ray.direction, intersection.n, connect) && isValid(dir, first.n, -connect)) {

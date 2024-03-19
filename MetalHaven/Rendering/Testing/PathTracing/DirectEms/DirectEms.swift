@@ -101,7 +101,7 @@ class DirectEmsIntersector: SequenceIntersector, SequenceIntegrator {
         )
         self.imageSize = imageSize
         let lightSampler = LightingSampler(scene: scene)
-        areaLightBuffer.reset(lightSampler.sampler, usage: .managed)
+        areaLightBuffer.reset(lightSampler.lights, usage: .managed)
         totalAreaBuffer.reset([lightSampler.totalArea], usage: .sparse)
     }
     

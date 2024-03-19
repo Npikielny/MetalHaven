@@ -8,7 +8,7 @@
 import Foundation
 
 class LightingSampler {
-    let sampler: [AreaLight]
+    let lights: [AreaLight]
     let totalArea: Float
     
     init(scene: GeometryScene) {
@@ -30,11 +30,14 @@ class LightingSampler {
                             let s1 = triangle.v2 - triangle.v1
                             let s2 = triangle.v3 - triangle.v1
                             return length(cross(s1, s2)) / 2
-                        case NO_GEOMETRY, BOX:
-                            print("Non light type \(geometry.geometryType)")
-                            return 0
+                        case SQUARE:
+                            let square = geometry as! Square
+                            let s1 = square.v2 - square.v1
+                            let s2 = square.v3 - square.v1
+                            return length(cross(s1, s2))
+                            //                            return sqrt(dot(s1, s1) * dot(s2, s2))
                         default:
-                            print("Invalid geometry type \(geometry.geometryType)")
+                            print("Non light type \(geometry.geometryType)")
                             return 0
                     }
                 }()
@@ -43,8 +46,34 @@ class LightingSampler {
             }
             offset += UInt32(geometry.stride)
         }
-        
+        print(totalArea)
         self.totalArea = totalArea
-        sampler = luminaries
+        lights = luminaries
+    }
+    
+    func sample(samples: SIMD3<Float>, geometry: [any Geometry]) -> LuminarySample {
+        var integrated = Float(0)
+        var lightIndex = 0
+        while integrated < samples.x * totalArea {
+            integrated += lights[lightIndex].totalArea
+            lightIndex += 1
+        }
+        lightIndex = max(lightIndex == 0 ? 0 : lightIndex - 1, 0)
+        
+        let light = lights[lightIndex]
+        
+        let geometry = geometry[Int(light.index)]
+        
+        let sample = SIMD2<Float>(samples.y, samples.z)
+        var luminarySample = switch geometry.geometryType {
+        case TRIANGLE: sampleLuminaryTriangle(geometry as! Triangle, sample)
+        case SPHERE: sampleLuminarySphere(geometry as! Sphere, sample)
+        case SQUARE: sampleLuminarySquare(geometry as! Square, sample)
+        default: fatalError()
+        }
+        
+        luminarySample.emission = light.color
+        luminarySample.lightId = UInt32(lightIndex)
+        return luminarySample
     }
 }

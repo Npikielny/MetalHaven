@@ -99,21 +99,21 @@ class BidirectionalIntegrator: SequenceIntersector, SequenceIntegrator {
         )
         self.imageSize = imageSize
         let lightSampler = LightingSampler(scene: scene)
-        areaLight.reset(lightSampler.sampler, usage: .managed)
+        areaLight.reset(lightSampler.lights, usage: .managed)
         totalArea.reset([lightSampler.totalArea], usage: .sparse)
     }
     
     func intersect(gpu: GPU, rays: Buffer<Ray>, intersections: Buffer<Intersection>, indicator: Buffer<Bool>) async throws {
-        if rng.generate() < 1 / 100 {
-            samplers.reset(
-                samplers.generate(
-                    rng: rng,
-                    maxSeed: 1024,
-                    count: imageSize.x * imageSize.y
-                ),
-                usage: .managed
-            )
-        }
+//        if rng.generate() < 1 / 100 {
+//            samplers.reset(
+//                samplers.generate(
+//                    rng: rng,
+//                    maxSeed: 1024,
+//                    count: imageSize.x * imageSize.y
+//                ),
+//                usage: .managed
+//            )
+//        }
         shader.buffers =  [
             rays,
             Buffer([UInt32(rays.count)], usage: .sparse),

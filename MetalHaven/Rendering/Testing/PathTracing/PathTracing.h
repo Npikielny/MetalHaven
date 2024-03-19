@@ -16,5 +16,6 @@
 #import "../../Sampling/Sampling.h"
 #import "../../Sampling/MetalSampling.hpp"
 #import "./PathMats/SampleMat.hpp"
+#import "../../Scene/Core3DMetal.hpp"
 
 #endif /* PathTracing_h */

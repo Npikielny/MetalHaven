@@ -27,23 +27,30 @@ struct ContentView: View {
         let height = width * 600 / 800
         let o = SIMD3<Float>(0, 0.919769, 5.41159)
         let t = SIMD3<Float>(0, 0.893051, 4.41198)
+//        let o = SIMD3<Float>(0, 1, 5)
+//        let t = SIMD3<Float>(0, 0.7, 0)
         let d = t - o
-        
+        let camera = Camera(position: o, forward: d, fov: 27.7856, imageSize: SIMD2<Int>(width, height))
         PathTracingView(
             scene: .boxScene,
-            camera: Camera(position: o, forward: d, fov: 27.7856, imageSize: SIMD2<Int>(width, height)),
-            samples: 1024,
+            camera: camera,
+            samples: 256,
             antialiased: true,
-            renderer: ContinualRenderer(integrator: PMis(), generator: PRNG())
-        )
+            renderer: ContinualRenderer(integrator: HybridBidir(), generator: PRNG())
+        ).onAppear {
+            
+//            HybridBidir()
+//                .luminaryPath(gpu: .default, rng: PRNG(), scene: .boxScene, lights: LightingSampler(scene: .boxScene), camera: camera)
+        }
+//        FluidSim2D(gpu: .default, n: 300, rng: PRNG(), bins: 30)
 //        PathTracingView(
 //            scene: .boxScene,
 //            camera: Camera(position: o, forward: d, fov: 27.7856, imageSize: SIMD2<Int>(width, height)),
 //            samples: 512,
 //            antialiased: true,
-//            renderer: SequenceRenderer(method: PathMatsIntegratorSingle())
+//            renderer: SequenceRenderer(method: BidirectionalIntegrator())
 //        )
-//        
+//
         
 //        Grapher()
     }

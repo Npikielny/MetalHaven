@@ -353,15 +353,5 @@ class AcceleratedRayIntersector {
     }
 }
 
-extension Triangle: GPUEncodable, Geometry {
-    var geometryType: GeometryType { TRIANGLE }
-    
-}
-
-extension Plane: GPUEncodable, Geometry {
-    var geometryType: GeometryType { PLANE }
-    
-}
-
 extension UInt16: GPUEncodable {}
 

@@ -18,7 +18,7 @@ Ray createRay(float3 origin, float3 direction) {
     r.throughput = 1.0;
     r.result = 0.0;
     r.eta = 1.0;
-    r.expected = INFINITY;
+    r.expected = -INFINITY;
     r.mis = 1;
     return r;
 }

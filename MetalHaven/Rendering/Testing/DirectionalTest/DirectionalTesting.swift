@@ -93,7 +93,7 @@ class DirectionalTestIntegrator: SequenceIntegrator {
         for i in 0..<intersections.count {
             guard let intersection = intersections[i] else { print("No intersection"); continue }
             if intersection.t != Float.infinity {
-                for light in lights {
+                for _ in lights {
                     rays[i]?.result += /*max(0, dot(intersection.n, -normalize(light.direction))) * light.color **/0.1 * diffuseMats[Int(intersection.materialId)].albedo
                 }
             }

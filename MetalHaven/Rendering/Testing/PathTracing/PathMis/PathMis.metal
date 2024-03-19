@@ -64,8 +64,8 @@ void pathMis(uint tid [[thread_position_in_grid]],
     device Ray & ray = rays[tid];
     device Intersection & intersection = intersections[tid];
     device HaltonSampler & sampler = samplers[tid];
-    thread float3 && n = 0.;
     switch (ray.state) {
+        case WAITING: { ray.state = FINISHED; }
         case FINISHED: { return; }
         case TRACING: {
             intersection = trace(ray, scene, types, objectCount);
@@ -119,14 +119,14 @@ void pathMis(uint tid [[thread_position_in_grid]],
         case OLD: {
             // MARK: - EMS
             float invArea = 1 / totalArea;
-            float3 l = sampleLuminaries(lights, totalArea, sampler, scene, types, n);
-            float3 lumDir = normalize(l - intersection.p);
+            LuminarySample l = sampleLuminaries(lights, totalArea, sampler, scene, types);
+            float3 lumDir = normalize(l.p - intersection.p);
             Ray luminaryRay = createRay(intersection.p + lumDir * 1e-4, lumDir);
             bool isValid = dot(-ray.direction, intersection.n) * dot(lumDir, intersection.n) > 0; // makes sure we're not doing a luminary sample that passes through the surface
 //            bool isValid = true;
             Intersection shadowTest = trace(luminaryRay, scene, types, objectCount);
-            if (isValid && -dot(lumDir, n) > 0 && abs(distance(luminaryRay.origin, l) - abs(shadowTest.t)) < 1e-4)  {
-                float3 emsResult = ray.throughput * getEmission(matTypes[shadowTest.materialId], materials) * abscos(luminaryRay.direction, intersection.n) * abscos(luminaryRay.direction, n) / (shadowTest.t * shadowTest.t) * totalArea;
+            if (isValid && -dot(lumDir, l.n) > 0 && abs(distance(luminaryRay.origin, l.p) - abs(shadowTest.t)) < 1e-4)  {
+                float3 emsResult = ray.throughput * getEmission(matTypes[shadowTest.materialId], materials) * abscos(luminaryRay.direction, intersection.n) * abscos(luminaryRay.direction, l.n) / (shadowTest.t * shadowTest.t) * totalArea;
                 
                 
                 float3 pt = float3(dot(intersection.frame.right, luminaryRay.direction),

@@ -10,7 +10,7 @@ import MetalAbstract
 struct PMis: ContinualIntegrator {
     var generator: Generator = PRNG()
     
-    var regenProbability: Float { 0 / 300 }
+    var regenProbability: Float { 1 / 300 }
     
     var singlePass: Bool { true }
     

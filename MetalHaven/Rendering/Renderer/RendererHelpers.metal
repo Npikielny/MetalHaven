@@ -116,13 +116,14 @@ void intersect(uint tid [[thread_position_in_grid]],
     device Intersection & intersection = intersections[tid];
     device Ray & ray = rays[tid];
     switch (ray.state) {
+        case WAITING:
         case FINISHED: { return; }
         case TRACING: {}
         case OLD: {
             ray.origin += ray.direction * 1e-4;
             intersection = trace(ray, scene, types, objectCount);
             if (intersection.t == INFINITY) {
-                ray.state = FINISHED;
+                ray.state = WAITING;
                 return;
             }
             intersection.t += 1e-4;
@@ -150,23 +151,11 @@ void cleanAndAccumulate(uint tid [[thread_position_in_grid]],
     if (s > max)
         return;
     device Ray & ray = rays[tid];
-//    switch (ray.state) {
-//        case TRACING: {}
-//        case OLD: { return; }
-//        case FINISHED: { break; }
-//    }
     
     uint x = (tid + chunkOffset) % width;
     uint y = (tid + chunkOffset) / width;
     uint2 p = uint2(x, y);
     
-//    if (s >= max) {
-//        float3 result = (ray.result + tex.read(p).xyz * float(max - 1))/float(max);
-//        float4 r = float4(result, 1);
-//        tex.write(r, p);
-//        samples[tid] += 1;
-//        return;
-//    }
     uint2 size = uint2(width, destination.get_height());
     
     device HaltonSampler & sampler = samplers[tid];
@@ -177,19 +166,23 @@ void cleanAndAccumulate(uint tid [[thread_position_in_grid]],
     float3 dir = normalize(projection * float3(uv, 1));
     
     float3 result = destination.read(p).xyz;
-//    float3 result = ray.result;
-//        float3 result = (ray.result + tex.read(p).xyz * float(s))/float(s + 1);
     float3 sum = result + ray.result / float(max);
     float3 r = sum * float(max) / float(s + 1);
-    temp.write(float4(r / (r + 1), 1), p);
     if (ray.state == FINISHED) {
         samples[tid] = s + 1;
         if (samples[tid] > max) {
+//            temp.write(float4(r / (r + 1), 1), p);
+            temp.write(float4(r, 1), p);
             destination.write(float4(sum / (sum + 1), 1), p);
         } else {
+//            temp.write(float4(r / (r + 1) * 2, 1), p);
+            temp.write(float4(r, 1), p);
             destination.write(float4(sum, 1), p);
         }
         rays[tid] = createRay(center, dir);
+    } else {
+//        temp.write(float4(r / (r + 1) * 2, 1), p);
+        temp.write(float4(r, 1), p);
     }
     
     indicator = true;

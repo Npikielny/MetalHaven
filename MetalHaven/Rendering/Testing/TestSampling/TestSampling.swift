@@ -9,37 +9,11 @@ import MetalAbstract
 import SwiftUI
 
 struct TestSamplingView: View {
-//    @Expose var color: EColor
-//    @StateObject var container = ExposableContainer(displayMethod: .none)
-    
-//    @ObservedObject var update: Update
-    
-//    init() {
-//        let color = Expose(wrappedValue: EColor(color: SIMD3<Double>(1,1,1)))
-//        self._color = color
-//        self._update = ObservedObject(wrappedValue: color.state)
-//    }
-    
-    
     var view: MAView = {
         let tex = Texture(format: .rgba16Float, width: 512, height: 512, depth: 1, storageMode: .private, usage: [.shaderRead, .shaderWrite])
         let rng = PRNG()
         let random = (0..<512 * 512)
             .map { _ in UInt16(min(rng.generate() * 65536, 65536)) }
-        
-//        let randomTexture = Texture(name: "Random tex") { gpu in
-//            let randomTex = try Texture.createMTLTexture(name: "Random tex", gpu: gpu.device, format: .r8Uint, width: 512, height: 512, storageMode: .managed, usage: .shaderRead)
-//            randomTex.replace(
-//                region: MTLRegion(
-//                    origin: MTLOrigin(x: 0, y: 0, z: 0),
-//                    size: MTLSize(width: 512, height: 512, depth: 1)
-//                ),
-//                mipmapLevel: 0,
-//                withBytes: random,
-//                bytesPerRow: MemoryLayout<UInt8>.stride * 512
-//            )
-//            return randomTex
-//        }
         
         let samplerBuffer = Buffer(
             name: "Samplers",
@@ -123,4 +97,19 @@ extension Buffer<HaltonSampler> {
         }
             .map { HaltonSampler(seed: uint32($0.0), uses: uint32($0.1)) }
     }
+    
+//    func generate(
+//        rng: Generator,
+//        maxSeed: Int,
+//        count: Int
+//    ) -> [HaltonSampler] {
+//        Array(
+//            repeating: (
+//                min(Int(rng.generate() * Float(maxSeed)), maxSeed),
+//                min(Int(rng.generate() * Float(maxSeed)), maxSeed)
+//            ),
+//            count: count
+//        )
+//            .map { HaltonSampler(seed: uint32($0.0), uses: uint32($0.1)) }
+//    }
 }
