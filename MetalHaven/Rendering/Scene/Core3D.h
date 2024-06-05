@@ -13,6 +13,7 @@
 #import "Lighting/Lighting.h"
 #import "../Sampling/Sampling.h"
 //#import "../Sampling/CPUSampling.h"
+#import "Materials/Material.h"
 #import "../Sampling/LightSampling.h"
 
 #endif /* Core3D_h */

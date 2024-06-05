@@ -32,8 +32,4 @@ class TriangleIntersector: SequenceIntersector, SequenceIntegrator {
             )
         }
     }
-    
-    func initialize(scene: GeometryScene, imageSize: SIMD2<Int>) {
-        
-    }
 }

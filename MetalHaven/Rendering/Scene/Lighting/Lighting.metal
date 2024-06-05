@@ -81,7 +81,8 @@ LuminarySample sampleLuminarySphere(Sphere sphere, vector_float2 sample) {
     LuminarySample s;
     vector_float3 dir = sampleSphere(sample);
     s.p = dir * sphere.size + sphere.position;
-    s.n = dir;
+//    s.n = normalize(dir); // TODO: I don't know why this didn't work...
+    s.n = normalize(s.p - sphere.position);
     return s;
 }
 

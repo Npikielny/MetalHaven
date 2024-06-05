@@ -19,8 +19,5 @@ struct PEms: ContinualIntegrator {
     var integrator = ComputeShader.Function(name: "pathEmsIntegrator")
     
     typealias State = ()
-    
-    func initialize(scene: GeometryScene, imageSize: SIMD2<Int>) {}
-    func generateState(frame: Int, imageSize: SIMD2<Int>) -> () {}
 }
 

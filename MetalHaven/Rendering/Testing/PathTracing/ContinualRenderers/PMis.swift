@@ -19,7 +19,4 @@ struct PMis: ContinualIntegrator {
     var integrator = ComputeShader.Function(name: "pathMisIntegrator")
     
     typealias State = ()
-    
-    func initialize(scene: GeometryScene, imageSize: SIMD2<Int>) {}
-    func generateState(frame: Int, imageSize: SIMD2<Int>) -> () {}
 }

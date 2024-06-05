@@ -50,6 +50,12 @@ float4 clearTexture(CornerVert in [[stage_in]]) {
 constexpr metal::sampler sam(metal::min_filter::bicubic, metal::mag_filter::bicubic, metal::mip_filter::none);
 
 [[fragment]]
+float4 uvFrag(CornerVert in [[stage_in]],
+                   texture2d<float> tex) {
+    return float4(tex.sample(sam, in.uv).xyz, 1);
+}
+
+[[fragment]]
 float4 copyTexture(CornerVert in [[stage_in]],
                    constant float & rescale,
                    texture2d<float> tex) {
@@ -142,6 +148,7 @@ void cleanAndAccumulate(uint tid [[thread_position_in_grid]],
                         constant float3 & center,
                         device HaltonSampler * samplers,
                         device bool & indicator,
+                        constant float2 & offset,
                         texture2d<float, access::read_write> destination,
                         texture2d<float, access::write> temp) {
     uint width = destination.get_width();
@@ -158,31 +165,29 @@ void cleanAndAccumulate(uint tid [[thread_position_in_grid]],
     
     uint2 size = uint2(width, destination.get_height());
     
-    device HaltonSampler & sampler = samplers[tid];
-    float2 jitter = (generateVec(sampler) * 2 - 1) / float2(size);
-    
-    float2 uv = float2(x, y) / float2(size) * 2 - 1 + jitter;
-    
-    float3 dir = normalize(projection * float3(uv, 1));
-    
+//    device HaltonSampler & sampler = samplers[tid];
     float3 result = destination.read(p).xyz;
-    float3 sum = result + ray.result / float(max);
-    float3 r = sum * float(max) / float(s + 1);
+    if (!isfinite(length(ray.result))) {
+        ray.result = 0;
+    }
+    float3 sum = result + ray.result;
+    float3 r = sum / float(s + 1);
     if (ray.state == FINISHED) {
         samples[tid] = s + 1;
         if (samples[tid] > max) {
-//            temp.write(float4(r / (r + 1), 1), p);
-            temp.write(float4(r, 1), p);
-            destination.write(float4(sum / (sum + 1), 1), p);
+            temp.write(float4(r / 3, 1), p);
+//            temp.write(float4(sum / float(max), 1), p);
+            destination.write(float4(sum / float(max), 1), p);
         } else {
-//            temp.write(float4(r / (r + 1) * 2, 1), p);
-            temp.write(float4(r, 1), p);
+            temp.write(float4(r / 2, 1), p);
             destination.write(float4(sum, 1), p);
         }
+        float2 jitter = /*generateVec(sampler)*/offset / float2(size);
+        
+        float2 uv = float2(x, y) / float2(size) * 2 - 1 + jitter;
+        
+        float3 dir = normalize(projection * float3(uv, 1));
         rays[tid] = createRay(center, dir);
-    } else {
-//        temp.write(float4(r / (r + 1) * 2, 1), p);
-        temp.write(float4(r, 1), p);
     }
     
     indicator = true;

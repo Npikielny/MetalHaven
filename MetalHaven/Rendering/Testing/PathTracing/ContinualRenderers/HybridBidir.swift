@@ -35,7 +35,10 @@ struct HybridBidir: ContinualIntegrator {
         let lights = LightingSampler(scene: scene)
         var intersections = [ShadingPoint]()
         
-        for _ in 0...10000 {
+        for i in 0...10_000 {
+            if i % 200 == 0 {
+                print(Float(i) / Float(10_000))
+            }
             let start = lights.sample(samples: generator.generateVec3(), geometry: scene.geometry)
             var dir = sampleCosineHemisphere(generator.generateVec2())
             
@@ -62,22 +65,21 @@ struct HybridBidir: ContinualIntegrator {
                 ray.state = OLD
                 ray.result /= cont
                 
-                let next = trace(ray: ray, scene: scene.geometry)
-                if next.t == .infinity {
+                let intersection = trace(ray: ray, scene: scene.geometry)
+                if intersection.t == .infinity {
                     ray.state = FINISHED
                     continue
                 }
-                ray.origin = next.p
-                let dir = sampleCosineHemisphere(generator.generateVec2())
-                let warped = toFrame(dir, next.frame)
-                ray.result *= abs(dot(-ray.direction, next.n)) * scene.materials[Int(next.materialId)].reflectance
+                let next = smat(ray: ray, intersection: intersection, scene: scene, generator: generator.generate)
+                ray.origin = intersection.p
+                ray.direction = next.dir
+                ray.result *= abs(dot(-ray.direction, intersection.n)) * next.sample
                 intersections.append(
                     ShadingPoint(
-                        intersection: next,
+                        intersection: intersection,
                         irradiance: ray.result * lights.totalArea
                     )
                 )
-                ray.direction = warped
                 
                 if iterations >= 2 {
                     cont = min(ray.result.max() * ray.eta * ray.eta, 0.99)
@@ -90,9 +92,50 @@ struct HybridBidir: ContinualIntegrator {
         shadingCount.reset([UInt32(intersections.count)], usage: .sparse)
         print("LIGHT RAYS:", intersections.count)
     }
-    
-    func generateState(frame: Int, imageSize: SIMD2<Int>) -> () {
-        
+}
+
+func smat(ray: Ray, intersection: Intersection, scene: GeometryScene, generator: () -> Float) -> MaterialSample {
+    let material = scene.materials[Int(intersection.materialId)]
+    switch material.type {
+        case BASIC:
+            let dir = sampleCosineHemisphere(vector_float2(generator(), generator()))
+            return MaterialSample(
+                sample: material.reflectance,
+                dir: toFrame(dir, intersection.frame),
+                eta: 1,
+                pdf: cosineHemispherePdf(dir)
+            )
+        case MIRROR:
+            return MaterialSample(
+                sample: material.reflectance,
+                dir: reflect(ray.direction, n: intersection.n),
+                eta: 1,
+                pdf: 1
+            )
+        case DIELECTRIC:
+            let mat = material as! Dielectric
+            let c = dot(-ray.direction, intersection.n)
+            let f = fresnel(c, 1.000277, mat.IOR)
+            
+            let entering = dot(ray.direction, intersection.n) < 0
+            let eta1 = entering ? 1.000277 : mat.IOR
+            let eta2 = entering ? mat.IOR : 1.000277
+            
+            var sample = MaterialSample()
+            sample.pdf = 1
+            if generator() < f {
+                sample.dir = reflect(ray.direction, n: intersection.n)
+                sample.sample = mat.reflectance
+                sample.eta = 1
+            } else {
+                let eta = eta1 / eta2
+                sample.dir = refract(ray.direction, n: intersection.n, eta: eta)
+                sample.eta = 1 / eta
+                sample.sample = mat.reflectance
+            }
+            return sample 
+        default: fatalError()
+            
     }
 }
 

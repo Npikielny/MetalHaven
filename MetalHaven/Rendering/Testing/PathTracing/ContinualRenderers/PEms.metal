@@ -9,28 +9,55 @@
 #import "../PathTracing.h"
 using namespace metal;
 
-void generateShadowRay(Ray ray,
-                       Intersection intersection,
-                       device Ray & shadowRay,
-                       constant MaterialDescription * matTypes,
-                       constant char * scene,
-                       constant GeometryType * types,
-                       device HaltonSampler & sampler,
-                       constant AreaLight * lights,
-                       constant float & totalArea
-                       ) {
+void sampleShadowRay(Ray ray,
+                  Intersection intersection,
+                  device Ray & shadowRay,
+                  constant MaterialDescription * matTypes,
+                  constant char * scene,
+                  constant GeometryType * types,
+                  device HaltonSampler & sampler,
+                  constant AreaLight * lights,
+                  constant float & totalArea,
+                  bool mis
+                  ) {
     if (matSamplingStrategy(matTypes[intersection.materialId].type) == SOLID_ANGLE) {
         LuminarySample l = sampleLuminaries(lights, totalArea, sampler, scene, types);
-        float3 dir = normalize(l.p - intersection.p);
+        float3 dir = (l.p - intersection.p);
+        float d = length(dir);
+        dir /= d;
+        
+        float attenuation = abs(dot(dir, intersection.n)) * max(0.f, dot(-dir, l.n));
+        if (attenuation == 0 || (dot(-ray.direction, intersection.n) * dot(dir, intersection.n)) < 0) {
+            shadowRay.expected = -INFINITY;
+            shadowRay.state = FINISHED;
+            shadowRay.result = 0;
+            return;
+        }
+        
         shadowRay.origin = intersection.p;
         shadowRay.direction = dir;
-        float dist = distance(intersection.p, l.p);
-        shadowRay.expected = dist;
-        shadowRay.throughput = ray.throughput * max(0.f, dot(-dir, l.n)) * abs(dot(dir, intersection.n)) / (dist * dist) * totalArea;
+        shadowRay.expected = d;
         shadowRay.state = TRACING;
+        shadowRay.result = l.emission * attenuation * ray.throughput * totalArea;
+        if (mis) {
+            float epdf = attenuation / totalArea;
+            float3 frameDir = toFrame(dir, intersection.frame);
+            frameDir *= sign(dot(frameDir, intersection.n));
+            float bpdf = cosineHemispherePdf(frameDir);
+            shadowRay.mis = epdf / (epdf + bpdf);
+        } else {
+            shadowRay.mis = 1;
+        }
     } else {
-        shadowRay.expected = -1;
+        shadowRay.expected = -INFINITY;
         shadowRay.state = FINISHED;
+        shadowRay.result = 0;
+    }
+}
+
+void addShadowRay(device Ray & ray, Ray shadowRay, Intersection shadowTest) {
+    if (abs(shadowTest.t - shadowRay.expected) <= 1e-4) {
+        ray.result += shadowRay.result * shadowRay.mis;
     }
 }
 
@@ -57,60 +84,54 @@ void pathEmsIntegrator(uint tid [[thread_position_in_grid]],
     constant Intersection & shadowTest = shadowTests[tid];
     device HaltonSampler & sampler = samplers[tid];
     switch (ray.state) {
-        case WAITING: { ray.state = FINISHED; }
-        case FINISHED: {
-            if (shadowRay.expected > 0 && shadowTest.t < INFINITY && (abs(shadowTest.t - shadowRay.expected) < 1e-4)) {
-                float3 emission = getEmission(matTypes[shadowTest.materialId], materials);
-                ray.result += emission * shadowRay.throughput;
-            }
-            return;
+        case WAITING: {
+            addShadowRay(ray, shadowRay, shadowTest);
+            ray.state = FINISHED;
         }
+        case FINISHED: { return; }
         case TRACING: {
             if (dot(-ray.direction, intersection.n) > 0) {
                 float3 emission = getEmission(matTypes[intersection.materialId], materials);
                 ray.result += emission * ray.throughput;
             }
             
-            Out out = smat(ray, intersection, sampler, matTypes, materials);
+            MaterialSample o = sampleBSDF(ray, intersection, sampler, matTypes, materials);
+            ray.throughput *= o.sample;
+            sampleShadowRay(ray, intersection, shadowRay, matTypes, scene, types, sampler, lights, totalArea, false);
+//            auto L = sampleLuminaries(lights, totalArea, sampler, scene, types);
+//            float3 dir = normalize(L.p - intersection.p);
+//            float3 n = normalize(L.p - vector_float3(1 - 0.1,  1.6 - 0.1 - 0.05, -1 + 0.1));
+//            float attenuation = abs(dot(dir, intersection.n)) * abs(dot(-dir, n));// * max(0.f, dot(-dir, L.n));
+//            ray.result += L.emission * ray.throughput * attenuation;
             
-            ray.throughput *= out.sample;
-            
+            ray.direction = o.dir;
+            ray.eta *= o.eta;
             ray.origin = intersection.p;
-            
+            ray.mis = matSamplingStrategy(matTypes[intersection.materialId].type) == DISCRETE ? 1 : 0;
             ray.state = OLD;
-            ray.direction = out.dir;
-            ray.eta *= out.eta;
-            
-            generateShadowRay(ray, intersection, shadowRay, matTypes, scene, types, sampler, lights, totalArea);
-            
             return;
         }
         case OLD: {
-            if (shadowTest.t < INFINITY && (abs(shadowTest.t - shadowRay.expected) < 1e-4)) {
-                float3 emission = getEmission(matTypes[shadowTest.materialId], materials);
-                ray.result += emission * shadowRay.throughput;
-            } else if (shadowRay.expected == -1) {
-                float3 emission = getEmission(matTypes[intersection.materialId], materials);
-                ray.result += emission * ray.throughput * max(0.f, -dot(ray.direction, intersection.n));
-            }
+            float3 emission = max(0.f, -dot(ray.direction, intersection.n)) * getEmission(matTypes[intersection.materialId], materials);
+            ray.result += emission * ray.throughput * ray.mis;
+            addShadowRay(ray, shadowRay, shadowTest);
             
-            float cont = min(maxComponent(ray.throughput) * ray.eta * ray.eta, 0.99f);
-            if (generateSample(sampler) > cont) {
-                ray.state = FINISHED;
-                shadowRay.state = FINISHED;
-                shadowRay.expected = -1;
+            if (roulette(ray, sampler))
                 return;
-            }
             
-            Out out = smat(ray, intersection, sampler, matTypes, materials);
+//            auto L = sampleLuminaries(lights, totalArea, sampler, scene, types);
+//            float3 dir = normalize(L.p - intersection.p);
+//            float attenuation = abs(dot(dir, intersection.n)) * max(0.f, dot(-dir, L.n));
+//            ray.result += L.emission * ray.throughput * attenuation;
             
-            ray.throughput *= out.sample;
+            MaterialSample o = sampleBSDF(ray, intersection, sampler, matTypes, materials);
+            ray.throughput *= o.sample;
+            sampleShadowRay(ray, intersection, shadowRay, matTypes, scene, types, sampler, lights, totalArea, false);
+            ray.direction = o.dir;
+            ray.eta *= o.eta;
             ray.origin = intersection.p;
+            ray.mis = matSamplingStrategy(matTypes[intersection.materialId].type) == DISCRETE ? 1 : 0;
             
-            generateShadowRay(ray, intersection, shadowRay, matTypes, scene, types, sampler, lights, totalArea);
-            
-            ray.direction = out.dir;
-            ray.eta *= out.eta;
         }
     }
 }

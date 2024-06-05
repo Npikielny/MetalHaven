@@ -9,51 +9,47 @@
 #import "../PathTracing.h"
 using namespace metal;
 
-void generateShadowRayHybrid(device Ray & shadowRay,
-                             constant Intersection & shadowTest,
-                             device Ray & ray,
-                             Intersection intersection,
-                             constant MaterialDescription * matTypes,
-                             constant char * materials,
-                             device HaltonSampler & sampler,
-                             constant float & totalArea,
-                             constant ShadingPoint * shadingPoints,
-                             constant uint & shadingPointCount
-                             ) {
+void generateShadowRay(Ray ray,
+                       Intersection intersection,
+                       device Ray & shadowRay,
+                       constant MaterialDescription * matTypes,
+                       constant char * scene,
+                       constant GeometryType * types,
+                       ShadingPoint shadingPoint,
+                       float totalArea,
+                       bool mis
+                       ) {
     if (matSamplingStrategy(matTypes[intersection.materialId].type) == SOLID_ANGLE) {
-//        ray.mis = 0;
-        ShadingPoint point = shadingPoints[uint(generateSample(sampler) * float(shadingPointCount))];
-        float3 dir = point.intersection.p - intersection.p;
+        float3 dir = (shadingPoint.intersection.p - intersection.p);
         float d = length(dir);
-        if (d == 0) {
-            shadowRay.expected = -1;
-            shadowRay.state = FINISHED;
-        }
-        shadowRay.state = TRACING;
         dir /= d;
+        
+        float attenuation = abs(dot(dir, intersection.n)) * max(0.f, dot(-dir, shadingPoint.intersection.n));
+        if (attenuation == 0 || (dot(-ray.direction, intersection.n) * dot(dir, intersection.n)) < 0) {
+            shadowRay.expected = -INFINITY;
+            shadowRay.state = FINISHED;
+            shadowRay.result = 0;
+            return;
+        }
         
         shadowRay.origin = intersection.p;
         shadowRay.direction = dir;
         shadowRay.expected = d;
-        float attenuation = abs(dot(dir, point.intersection.n));
-        
-        float epdf = attenuation / totalArea / (d * d);
-        float bsdfPdf = cosineHemispherePdf(float3(dot(dir, intersection.frame.right),
-                                                   dot(dir, intersection.frame.up),
-                                                   dot(dir, intersection.frame.forward)
-                                                   ));
-        if (bsdfPdf == 0 || epdf == 0) {
-            shadowRay.state = FINISHED;
-            shadowRay.expected = -INFINITY;
-            return;
+        shadowRay.state = TRACING;
+        shadowRay.result = shadingPoint.irradiance * attenuation * ray.throughput * totalArea;
+        if (mis) {
+            float epdf = attenuation / totalArea;
+            float3 frameDir = toFrame(dir, intersection.frame);
+            frameDir *= sign(dot(frameDir, intersection.n));
+            float bpdf = cosineHemispherePdf(frameDir);
+            shadowRay.mis = epdf / (epdf + bpdf);
+        } else {
+            shadowRay.mis = 1;
         }
-        float mis = epdf / (epdf + bsdfPdf);
-//        float mis = 1;
-        shadowRay.result = point.irradiance * attenuation * abs(dot(dir, intersection.n)) * ray.throughput * mis;
     } else {
-        shadowRay.expected = -1;
+        shadowRay.expected = -INFINITY;
         shadowRay.state = FINISHED;
-        ray.mis = 1;
+        shadowRay.result = 0;
     }
 }
 
@@ -92,42 +88,38 @@ void hybridBidir(uint tid [[thread_position_in_grid]],
             return;
         }
         case OLD: {
-            if (abs(shadowTest.t - shadowRay.expected) < 1e-4) {
-                ray.result += shadowRay.result;
-            }
+            addShadowRay(ray, shadowRay, shadowTest);
             ray.result += getEmission(matTypes[intersection.materialId], materials) * max(0.f, dot(-ray.direction, intersection.n)) * ray.throughput * ray.mis;
             
-            float cont = min(maxComponent(ray.throughput) * ray.eta * ray.eta, 0.99f);
-            if (generateSample(sampler) > cont) {
-                ray.state = FINISHED;
-                shadowRay.state = FINISHED;
-                shadowRay.expected = -INFINITY;
-                return;
-            }
-            ray.throughput /= cont;
+            roulette(ray, sampler);
             
-            auto next = smat(ray, intersection, sampler, matTypes, materials);
+            auto next = sampleBSDF(ray, intersection, sampler, matTypes, materials);
+            ray.throughput *= next.sample;
+            generateShadowRay(ray, intersection, shadowRay, matTypes, scene, types, shadingPoints[int(shadingPointCount * generateSample(sampler))], totalArea, true);
             ray.direction = next.dir;
             ray.origin = intersection.p;
             ray.eta *= next.eta;
-            ray.throughput *= next.sample;
-            ray.mis = next.pdf / (next.pdf + 1 / totalArea);
-            
-            generateShadowRayHybrid(shadowRay, shadowTest, ray, intersection, matTypes, materials, sampler, totalArea, shadingPoints, shadingPointCount);
-            
+            if (matSamplingStrategy(matTypes[intersection.materialId].type) == DISCRETE) {
+                ray.mis = 1;
+            } else {
+                ray.mis = next.pdf / (next.pdf + 1 / totalArea);
+            }
             return;
         }
         case TRACING: {
             ray.result += getEmission(matTypes[intersection.materialId], materials) * max(0.f, dot(-ray.direction, intersection.n));
             
-            auto next = smat(ray, intersection, sampler, matTypes, materials);
+            auto next = sampleBSDF(ray, intersection, sampler, matTypes, materials);
+            ray.throughput *= next.sample;
+            generateShadowRay(ray, intersection, shadowRay, matTypes, scene, types, shadingPoints[int(shadingPointCount * generateSample(sampler))], totalArea, true);
             ray.direction = next.dir;
             ray.origin = intersection.p;
             ray.eta *= next.eta;
-            ray.throughput *= next.sample;
-            ray.mis = next.pdf / (next.pdf + 1 / totalArea);
-            
-            generateShadowRayHybrid(shadowRay, shadowTest, ray, intersection, matTypes, materials, sampler, totalArea, shadingPoints, shadingPointCount);
+            if (matSamplingStrategy(matTypes[intersection.materialId].type) == DISCRETE) {
+                ray.mis = 1;
+            } else {
+                ray.mis = next.pdf / (next.pdf + 1 / totalArea);
+            }
             
             ray.state = OLD;
             return;

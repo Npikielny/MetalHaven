@@ -10,20 +10,21 @@
 using namespace metal;
 
 float sampleRay(device Ray & ray, constant Intersection & intersection, device HaltonSampler & sampler, constant MaterialDescription * matTypes, constant char * materials) {
-    auto next = smat(ray, intersection, sampler, matTypes, materials);
+    auto next = sampleBSDF(ray, intersection, sampler, matTypes, materials);
     ray.direction = next.dir;
     ray.origin = intersection.p;
     ray.throughput *= next.sample;
     return next.pdf;
 }
 
-void roulette(device Ray & ray, device HaltonSampler & sampler) {
+bool roulette(device Ray & ray, device HaltonSampler & sampler) {
     float cont = min(maxComponent(ray.throughput) * ray.eta * ray.eta, 0.99f);
     if (generateSample(sampler) > cont) {
         ray.state = WAITING;
-        return;
+        return true;
     }
     ray.throughput /= cont;
+    return false;
 }
 
 [[kernel]]

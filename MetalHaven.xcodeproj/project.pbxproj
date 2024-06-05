@@ -18,6 +18,7 @@
 		302D6BC12A687406006D62A7 /* Ray.metal in Sources */ = {isa = PBXBuildFile; fileRef = 302D6BC02A687406006D62A7 /* Ray.metal */; };
 		302D6BC42A6875AB006D62A7 /* Geometry.metal in Sources */ = {isa = PBXBuildFile; fileRef = 302D6BC32A6875AB006D62A7 /* Geometry.metal */; };
 		302D6BC62A6884AC006D62A7 /* Camera.swift in Sources */ = {isa = PBXBuildFile; fileRef = 302D6BC52A6884AC006D62A7 /* Camera.swift */; };
+		30336BD32BACCFF50010B395 /* LiveHybridMLT.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30336BD22BACCFF50010B395 /* LiveHybridMLT.swift */; };
 		303547A12B7D16A4002E6C6B /* ShaderCompiler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 303547A02B7D16A4002E6C6B /* ShaderCompiler.swift */; };
 		303547A32B7D16E3002E6C6B /* Struct.swift in Sources */ = {isa = PBXBuildFile; fileRef = 303547A22B7D16E3002E6C6B /* Struct.swift */; };
 		303547A72B7D195F002E6C6B /* Grapher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 303547A62B7D195F002E6C6B /* Grapher.swift */; };
@@ -28,6 +29,11 @@
 		3037367A2B418716003214A0 /* MetalBridge in Frameworks */ = {isa = PBXBuildFile; productRef = 303736792B418716003214A0 /* MetalBridge */; };
 		303960242B86DBC8003543FA /* PMis.swift in Sources */ = {isa = PBXBuildFile; fileRef = 303960232B86DBC8003543FA /* PMis.swift */; };
 		303960262B86DC19003543FA /* PMis.metal in Sources */ = {isa = PBXBuildFile; fileRef = 303960252B86DC19003543FA /* PMis.metal */; };
+		3045ED3A2BAFA052005FE34D /* Accel.metal in Sources */ = {isa = PBXBuildFile; fileRef = 3045ED392BAFA052005FE34D /* Accel.metal */; };
+		3045ED3C2BAFAFFA005FE34D /* LiveBidir.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3045ED3B2BAFAFFA005FE34D /* LiveBidir.swift */; };
+		3045ED3E2BAFD541005FE34D /* PhotoEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3045ED3D2BAFD541005FE34D /* PhotoEncoder.swift */; };
+		3045ED402BAFD782005FE34D /* VisualizeNormals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3045ED3F2BAFD782005FE34D /* VisualizeNormals.swift */; };
+		3045ED422BAFD78C005FE34D /* VisualizeNormals.metal in Sources */ = {isa = PBXBuildFile; fileRef = 3045ED412BAFD78C005FE34D /* VisualizeNormals.metal */; };
 		304892632ADF713100938177 /* ThreadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304892622ADF713100938177 /* ThreadManager.swift */; };
 		305807272ACC65220079B6F4 /* Integrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 305807262ACC65220079B6F4 /* Integrator.swift */; };
 		3058072D2ACC65B10079B6F4 /* Ray.c in Sources */ = {isa = PBXBuildFile; fileRef = 3058072C2ACC65B10079B6F4 /* Ray.c */; };
@@ -36,6 +42,8 @@
 		305807352ACC684D0079B6F4 /* EncodableConformances.swift in Sources */ = {isa = PBXBuildFile; fileRef = 305807342ACC684D0079B6F4 /* EncodableConformances.swift */; };
 		305807372ACC72ED0079B6F4 /* VideoScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 305807362ACC72ED0079B6F4 /* VideoScene.swift */; };
 		30600D982BA90DAC00F111A7 /* HybridBidir.metal in Sources */ = {isa = PBXBuildFile; fileRef = 30600D972BA90DAC00F111A7 /* HybridBidir.metal */; };
+		30600D9E2BAA49C100F111A7 /* HybridMLT.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30600D9D2BAA49C100F111A7 /* HybridMLT.swift */; };
+		30600DA12BAA50CB00F111A7 /* Material.c in Sources */ = {isa = PBXBuildFile; fileRef = 30600DA02BAA50CB00F111A7 /* Material.c */; };
 		306474CB2B7C2180002E3DFA /* PathMatsSingle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 306474CA2B7C2180002E3DFA /* PathMatsSingle.swift */; };
 		306474CD2B7C21A9002E3DFA /* PathMatsSingle.metal in Sources */ = {isa = PBXBuildFile; fileRef = 306474CC2B7C21A9002E3DFA /* PathMatsSingle.metal */; };
 		306912152B51627600D1EA58 /* Tracing.c in Sources */ = {isa = PBXBuildFile; fileRef = 306912142B51627600D1EA58 /* Tracing.c */; };
@@ -71,6 +79,8 @@
 		30A786FF2B41753F008D4EBF /* BasicTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30A786FE2B41753F008D4EBF /* BasicTypes.swift */; };
 		30A787012B417575008D4EBF /* VectorTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30A787002B417575008D4EBF /* VectorTypes.swift */; };
 		30A787032B41758A008D4EBF /* Binops.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30A787022B41758A008D4EBF /* Binops.swift */; };
+		30AC515D2BAB527000AA195D /* Metropolis.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30AC515C2BAB527000AA195D /* Metropolis.swift */; };
+		30AC515F2BAB63E100AA195D /* Metropolis.metal in Sources */ = {isa = PBXBuildFile; fileRef = 30AC515E2BAB63E100AA195D /* Metropolis.metal */; };
 		30BC520B2BA243A60011D2E8 /* MPSIntersector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30BC520A2BA243A60011D2E8 /* MPSIntersector.swift */; };
 		30BC520D2BA244060011D2E8 /* TriangleIntersection.metal in Sources */ = {isa = PBXBuildFile; fileRef = 30BC520C2BA244060011D2E8 /* TriangleIntersection.metal */; };
 		30BC520F2BA2515F0011D2E8 /* Bidir.metal in Sources */ = {isa = PBXBuildFile; fileRef = 30BC520E2BA2515F0011D2E8 /* Bidir.metal */; };
@@ -131,6 +141,7 @@
 		302D6BC02A687406006D62A7 /* Ray.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Ray.metal; sourceTree = "<group>"; };
 		302D6BC32A6875AB006D62A7 /* Geometry.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Geometry.metal; sourceTree = "<group>"; };
 		302D6BC52A6884AC006D62A7 /* Camera.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Camera.swift; sourceTree = "<group>"; };
+		30336BD22BACCFF50010B395 /* LiveHybridMLT.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveHybridMLT.swift; sourceTree = "<group>"; };
 		303547A02B7D16A4002E6C6B /* ShaderCompiler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShaderCompiler.swift; sourceTree = "<group>"; };
 		303547A22B7D16E3002E6C6B /* Struct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Struct.swift; sourceTree = "<group>"; };
 		303547A62B7D195F002E6C6B /* Grapher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Grapher.swift; sourceTree = "<group>"; };
@@ -142,6 +153,11 @@
 		3037367B2B4187E9003214A0 /* ShaderCompiler */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = ShaderCompiler; sourceTree = "<group>"; };
 		303960232B86DBC8003543FA /* PMis.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PMis.swift; sourceTree = "<group>"; };
 		303960252B86DC19003543FA /* PMis.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = PMis.metal; sourceTree = "<group>"; };
+		3045ED392BAFA052005FE34D /* Accel.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Accel.metal; sourceTree = "<group>"; };
+		3045ED3B2BAFAFFA005FE34D /* LiveBidir.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveBidir.swift; sourceTree = "<group>"; };
+		3045ED3D2BAFD541005FE34D /* PhotoEncoder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoEncoder.swift; sourceTree = "<group>"; };
+		3045ED3F2BAFD782005FE34D /* VisualizeNormals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualizeNormals.swift; sourceTree = "<group>"; };
+		3045ED412BAFD78C005FE34D /* VisualizeNormals.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = VisualizeNormals.metal; sourceTree = "<group>"; };
 		304892622ADF713100938177 /* ThreadManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThreadManager.swift; sourceTree = "<group>"; };
 		305807262ACC65220079B6F4 /* Integrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Integrator.swift; sourceTree = "<group>"; };
 		3058072B2ACC65A40079B6F4 /* Tracing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Tracing.h; sourceTree = "<group>"; };
@@ -151,6 +167,9 @@
 		305807342ACC684D0079B6F4 /* EncodableConformances.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncodableConformances.swift; sourceTree = "<group>"; };
 		305807362ACC72ED0079B6F4 /* VideoScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoScene.swift; sourceTree = "<group>"; };
 		30600D972BA90DAC00F111A7 /* HybridBidir.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = HybridBidir.metal; sourceTree = "<group>"; };
+		30600D9D2BAA49C100F111A7 /* HybridMLT.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HybridMLT.swift; sourceTree = "<group>"; };
+		30600D9F2BAA4DC200F111A7 /* Material.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Material.h; sourceTree = "<group>"; };
+		30600DA02BAA50CB00F111A7 /* Material.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Material.c; sourceTree = "<group>"; };
 		306474CA2B7C2180002E3DFA /* PathMatsSingle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathMatsSingle.swift; sourceTree = "<group>"; };
 		306474CC2B7C21A9002E3DFA /* PathMatsSingle.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = PathMatsSingle.metal; sourceTree = "<group>"; };
 		306912142B51627600D1EA58 /* Tracing.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Tracing.c; sourceTree = "<group>"; };
@@ -196,6 +215,8 @@
 		30A786FE2B41753F008D4EBF /* BasicTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasicTypes.swift; sourceTree = "<group>"; };
 		30A787002B417575008D4EBF /* VectorTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VectorTypes.swift; sourceTree = "<group>"; };
 		30A787022B41758A008D4EBF /* Binops.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Binops.swift; sourceTree = "<group>"; };
+		30AC515C2BAB527000AA195D /* Metropolis.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Metropolis.swift; sourceTree = "<group>"; };
+		30AC515E2BAB63E100AA195D /* Metropolis.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Metropolis.metal; sourceTree = "<group>"; };
 		30BC520A2BA243A60011D2E8 /* MPSIntersector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPSIntersector.swift; sourceTree = "<group>"; };
 		30BC520C2BA244060011D2E8 /* TriangleIntersection.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = TriangleIntersection.metal; sourceTree = "<group>"; };
 		30BC520E2BA2515F0011D2E8 /* Bidir.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Bidir.metal; sourceTree = "<group>"; };
@@ -284,6 +305,8 @@
 			children = (
 				300893B62A93F97600176899 /* Material.swift */,
 				300893B92A93FA8500176899 /* Diffuse.swift */,
+				30600D9F2BAA4DC200F111A7 /* Material.h */,
+				30600DA02BAA50CB00F111A7 /* Material.c */,
 			);
 			path = Materials;
 			sourceTree = "<group>";
@@ -387,9 +410,16 @@
 				30861B4A2B8BE4530070831F /* PEms.swift */,
 				30861B4C2B8BE4600070831F /* PEms.metal */,
 				30172EB22B9BA0F700833A4F /* Bidir.swift */,
+				30BC520E2BA2515F0011D2E8 /* Bidir.metal */,
+				3045ED3B2BAFAFFA005FE34D /* LiveBidir.swift */,
 				30F711DB2BA8C42A0043E15B /* HybridBidir.swift */,
 				30600D972BA90DAC00F111A7 /* HybridBidir.metal */,
-				30BC520E2BA2515F0011D2E8 /* Bidir.metal */,
+				30600D9D2BAA49C100F111A7 /* HybridMLT.swift */,
+				30336BD22BACCFF50010B395 /* LiveHybridMLT.swift */,
+				30AC515C2BAB527000AA195D /* Metropolis.swift */,
+				30AC515E2BAB63E100AA195D /* Metropolis.metal */,
+				3045ED3F2BAFD782005FE34D /* VisualizeNormals.swift */,
+				3045ED412BAFD78C005FE34D /* VisualizeNormals.metal */,
 			);
 			path = ContinualRenderers;
 			sourceTree = "<group>";
@@ -411,9 +441,10 @@
 			children = (
 				3058072B2ACC65A40079B6F4 /* Tracing.h */,
 				306912142B51627600D1EA58 /* Tracing.c */,
+				306912162B5162C900D1EA58 /* Tracing.metal */,
 				30F711E12BA8FEEA0043E15B /* Tracing.swift */,
 				309201CC2B54B9830099D34F /* MetalTracing.hpp */,
-				306912162B5162C900D1EA58 /* Tracing.metal */,
+				3045ED392BAFA052005FE34D /* Accel.metal */,
 				3058072C2ACC65B10079B6F4 /* Ray.c */,
 				3058072E2ACC65BF0079B6F4 /* Intersection.c */,
 				302D6BC02A687406006D62A7 /* Ray.metal */,
@@ -559,6 +590,7 @@
 		30A410482A52394500C03BBD /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
+				3045ED3D2BAFD541005FE34D /* PhotoEncoder.swift */,
 				305807342ACC684D0079B6F4 /* EncodableConformances.swift */,
 				3096F0D42B4480D200BECC2D /* VoidBufferWrapper.swift */,
 				30370E762AE0B3CC00C56C8F /* Frame.swift */,
@@ -839,11 +871,13 @@
 				30FA51A32ADA485400E365A4 /* SequenceIntersector.swift in Sources */,
 				301B375C2ADDD436003EE9FC /* PathMats.swift in Sources */,
 				30E167F12BA5460C003FD9D6 /* 2DSim.swift in Sources */,
+				3045ED422BAFD78C005FE34D /* VisualizeNormals.metal in Sources */,
 				30D8E2522B4BDEBD0037670A /* TestSampling.metal in Sources */,
 				30FE256E2B414C0E005E3389 /* ShaderBuilder.swift in Sources */,
 				301B375E2ADDD5B2003EE9FC /* PathMats.metal in Sources */,
 				30FA51A92ADA505300E365A4 /* Intersect.metal in Sources */,
 				30370E7F2AE0D13100C56C8F /* BoxScene.swift in Sources */,
+				3045ED3C2BAFAFFA005FE34D /* LiveBidir.swift in Sources */,
 				30F711DE2BA8C4D50043E15B /* Lighting.c in Sources */,
 				303547A72B7D195F002E6C6B /* Grapher.swift in Sources */,
 				308BEEE12B7D3024003952ED /* Grapher.metal in Sources */,
@@ -865,6 +899,7 @@
 				306474CB2B7C2180002E3DFA /* PathMatsSingle.swift in Sources */,
 				306E14802B5D9D82002F6063 /* Bidirectional.metal in Sources */,
 				3069121C2B5289A900D1EA58 /* DirectEms.metal in Sources */,
+				30600D9E2BAA49C100F111A7 /* HybridMLT.swift in Sources */,
 				30FA51A72ADA4D0200E365A4 /* RayRasterShader.swift in Sources */,
 				30F711DC2BA8C42A0043E15B /* HybridBidir.swift in Sources */,
 				30A787032B41758A008D4EBF /* Binops.swift in Sources */,
@@ -872,11 +907,13 @@
 				3096F0D52B4480D200BECC2D /* VoidBufferWrapper.swift in Sources */,
 				30861B472B8BDC7B0070831F /* PMats.swift in Sources */,
 				302D6BC62A6884AC006D62A7 /* Camera.swift in Sources */,
+				30AC515D2BAB527000AA195D /* Metropolis.swift in Sources */,
 				30172EB32B9BA0F700833A4F /* Bidir.swift in Sources */,
 				305807352ACC684D0079B6F4 /* EncodableConformances.swift in Sources */,
 				306912202B533A3200D1EA58 /* LightingSampler.swift in Sources */,
 				303960262B86DC19003543FA /* PMis.metal in Sources */,
 				30FA51BC2ADB4D8400E365A4 /* RayTracerView.swift in Sources */,
+				30336BD32BACCFF50010B395 /* LiveHybridMLT.swift in Sources */,
 				30D8E25B2B4BE6180037670A /* MetalSampling.metal in Sources */,
 				30FA51AB2ADA515900E365A4 /* DirectionalTesting.metal in Sources */,
 				308BEEDF2B7D2CFF003952ED /* Parsing.swift in Sources */,
@@ -888,12 +925,16 @@
 				300893BC2A93FB1A00176899 /* Sampler.swift in Sources */,
 				303960242B86DBC8003543FA /* PMis.swift in Sources */,
 				3096F0D32B442CA200BECC2D /* RawBufferTest.metal in Sources */,
+				3045ED3A2BAFA052005FE34D /* Accel.metal in Sources */,
 				303547A32B7D16E3002E6C6B /* Struct.swift in Sources */,
 				30D8E2502B4BDE620037670A /* TestSampling.swift in Sources */,
 				30600D982BA90DAC00F111A7 /* HybridBidir.metal in Sources */,
+				30AC515F2BAB63E100AA195D /* Metropolis.metal in Sources */,
 				309C233A2A52253100BA7B73 /* MetalHavenApp.swift in Sources */,
 				30A786FF2B41753F008D4EBF /* BasicTypes.swift in Sources */,
 				309201C82B54B72C0099D34F /* PathMis.swift in Sources */,
+				30600DA12BAA50CB00F111A7 /* Material.c in Sources */,
+				3045ED402BAFD782005FE34D /* VisualizeNormals.swift in Sources */,
 				30705D332B4FC9E500F1604B /* Lighting.metal in Sources */,
 				306912152B51627600D1EA58 /* Tracing.c in Sources */,
 				309C237B2A5229FE00BA7B73 /* Geometry.swift in Sources */,
@@ -901,6 +942,7 @@
 				30FA51B12ADA557200E365A4 /* RendererHelpers.metal in Sources */,
 				305807332ACC67F80079B6F4 /* RendererManager.swift in Sources */,
 				302D6BC42A6875AB006D62A7 /* Geometry.metal in Sources */,
+				3045ED3E2BAFD541005FE34D /* PhotoEncoder.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

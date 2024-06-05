@@ -30,6 +30,12 @@ vector_float3 toWorld(vector_float3 v, Frame frame) {
 //                  );
 }
 
+vector_float3 toFrame(vector_float3 v, Frame frame) {
+    return vector_float3(dot(v, frame.right),
+                         dot(v, frame.up),
+                         dot(v, frame.forward));
+}
+
 Frame newFrame(vector_float3 up, vector_float3 forward, vector_float3 right) {
     Frame f;
     f.up = up;

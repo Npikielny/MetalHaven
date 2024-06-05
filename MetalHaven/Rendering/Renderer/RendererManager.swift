@@ -195,8 +195,8 @@ struct SequenceRenderer<T: SequenceIntersector, K: SequenceIntegrator>: Renderer
     }
 }
 
-struct ContinualRenderer: Renderer {
-    var integrator: any ContinualIntegrator
+struct ContinualRenderer<T: ContinualIntegrator>: Renderer {
+    var integrator: T
     var generator: any Generator
     func render(
         gpu: GPU,
@@ -244,12 +244,15 @@ struct ContinualRenderer: Renderer {
         
         var iters = 0
         
+        var state = integrator.generateState(frame: 0, imageSize: camera.imageSize)
         integrator.initialize(scene: scene, imageSize: camera.imageSize)
         
         while indicator[0] ?? false {
             iters += 1
-            try await integrator.step(
+            state = try await integrator.step(
                 gpu: gpu,
+                scene: scene,
+                state: state,
                 queries: queries,
                 uniform: uniform,
                 sampleCounts: raySamples,
@@ -261,11 +264,11 @@ struct ContinualRenderer: Renderer {
 //            print(raySamples[0])
             
             try await present(display, 1.0)
-            if iters % 100 == 0 {
-                print(iters)
-            }
+//            if iters % 100 == 0 {
+//                print(iters)
+//            }
         }
-        try await present(destination, 2.0)
+        try await present(destination, 1.0)
         return destination
     }
     

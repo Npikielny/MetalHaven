@@ -41,7 +41,7 @@ void directEms(uint tid [[thread_position_in_grid]],
     if (intersection.t != INFINITY) {
         MaterialDescription descriptor = matTypes[intersection.materialId];
         ray.result += getEmission(descriptor, materials) * ray.throughput;
-        ray.throughput *= getReflectance(descriptor, materials) * abscos(-ray.direction, intersection.n);
+        ray.throughput *= getReflectance(descriptor, materials) * abscos(ray.direction, intersection.n);
         
 //        ray.direction = reflect(ray.direction, intersection.n);
         ray.origin = intersection.p + intersection.n * 1e-4;// + ray.direction * 1e-4;
@@ -64,7 +64,7 @@ void directEms(uint tid [[thread_position_in_grid]],
 //        bool isValid = dot(-ray.direction, shadow.n) * dot(n, out) > 0;
         
         if (isValid && abs(shadow.t - distance(l.p, ray.origin)) < 1e-4) {
-            ray.result += ray.throughput / (shadow.t * shadow.t) * getEmission(matTypes[shadow.materialId], materials);
+            ray.result += ray.throughput * getEmission(matTypes[shadow.materialId], materials);
         }
         
         if (ray.state == OLD) {

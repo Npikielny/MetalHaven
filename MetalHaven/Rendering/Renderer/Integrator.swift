@@ -17,6 +17,8 @@ protocol Integrator {
 }
 
 extension Integrator {
+    func initialize(scene: GeometryScene, imageSize: SIMD2<Int>) {}
+    
     func generateIntersections(gpu: GPU, intersectionBuffer: Buffer<Intersection>, count: Int, usage: Usage = .gpu) async throws {
         intersectionBuffer.reset(count: count, usage: usage)
         
@@ -29,6 +31,10 @@ extension Integrator {
             )
         }
     }
+}
+
+extension Integrator where State == () {
+    func generateState(frame: Int, imageSize: SIMD2<Int>) -> State { () }
 }
 
 protocol SequenceIntegrator: Integrator {
@@ -58,11 +64,17 @@ protocol ContinualIntegrator: Integrator, Intersector {
     // Integration
     var integrator: ComputeShader.Function { get }
     var supplementaryBuffers: [any ErasedBuffer] { get }
+    
+    func updateState(gpu: GPU, scene: GeometryScene, state: State) async throws -> State
 }
 
 extension ContinualIntegrator {
     // Extra buffers for integration
     var supplementaryBuffers: [any ErasedBuffer] { [] }
+    
+    func updateState(gpu: GPU, scene: GeometryScene, state: State) async throws -> State {
+        state
+    }
 }
 
 struct ContinualIntegratorUniforms {
@@ -159,6 +171,7 @@ extension ContinualIntegrator {
         samplers: Buffer<HaltonSampler>,
         indicator: Buffer<Bool>,
         accumulator: Texture,
+        offset: SIMD2<Float>,
         display: Texture
     ) async throws {
         indicator[0] = false
@@ -174,7 +187,8 @@ extension ContinualIntegrator {
                     Buffer([camera.projection], usage: .sparse),
                     Buffer([camera.position], usage: .sparse),
                     samplers,
-                    indicator
+                    indicator,
+                    Buffer([offset], usage: .sparse),
                 ],
                 textures: [accumulator, display],
                 threadGroupSize: MTLSize(width: 8, height: 1, depth: 1),
@@ -185,6 +199,8 @@ extension ContinualIntegrator {
     
     func step(
         gpu: GPU,
+        scene: GeometryScene,
+        state: State,
         queries: [(rays: Buffer<Ray>, intersections: Buffer<Intersection>)],
         uniform: ContinualIntegratorUniforms,
         sampleCounts: Buffer<UInt32>,
@@ -192,7 +208,7 @@ extension ContinualIntegrator {
         indicator: Buffer<Bool>,
         accumulator: Texture,
         display: Texture
-    ) async throws {
+    ) async throws -> State {
         try await intersect(
             gpu: gpu,
             queries: queries,
@@ -215,8 +231,11 @@ extension ContinualIntegrator {
             samplers: uniform.samplers,
             indicator: indicator,
             accumulator: accumulator,
+            offset: uniform.generator.generateVec2(),
             display: display
         )
+        
+        return try await updateState(gpu: gpu, scene: scene, state: state)
     }
 }
 

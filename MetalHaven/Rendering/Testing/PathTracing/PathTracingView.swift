@@ -146,40 +146,52 @@ struct SequencePathTracingView<T: SequenceIntersector, K: SequenceIntegrator>: V
 }
 
 struct PathTracingView: View {
+    static let present = RasterShader.Function(
+        vertexShader: "getCornerVerts",
+        fragmentShader: "copyTexture", // "dynamicTexture"
+        format: MTLPixelFormat.rgba16Float
+    )
+    static var drawOperation = RasterShader(
+        function: present,
+        fragmentTextures: [],
+        passDescriptor: .drawable
+    )
     let view: MAView
     @StateObject var update: Temp
     let aspectRatio: Float
     
     let timer = Timer.publish(every: 1 / 30, on: .main, in: .default).autoconnect()
     
+//    let drawOperation: RasterShader
+    
+    @State var appeared = false
+    
     init(scene: GeometryScene, camera: Camera, samples: Int, antialiased: Bool, renderer: Renderer) {
         self.aspectRatio = Float(camera.imageSize.x) / Float(camera.imageSize.y)
         let upd = Temp()
         self._update = StateObject(wrappedValue: upd)
         
-        let drawOperation = RasterShader(
-            vertexShader: "getCornerVerts",
-            fragmentShader: /*"dynamicTexture",*/ "copyTexture",
-//            fragmentTextures: [tex],
-//            fragmentBuffers: [Buffer(name: "Rscale", [Float(rescale)], usage: .sparse)],
-            startingVertex: 0,
-            vertexCount: 6,
-            passDescriptor: .drawable,
-            format: .rgba16Float
-        )
+//        let drawOperation = RasterShader(
+//            function: Self.present,
+//            startingVertex: 0,
+//            vertexCount: 6,
+//            passDescriptor: .drawable
+//        )
+//        self.drawOperation = drawOperation
         self.view = MAView(
             gpu: .default,
             frame: CGRect(origin: .zero, size: CGSize(width: camera.imageSize.x, height: camera.imageSize.y)),
             format: .rgba16Float,
             updateProcedure: .manual) { gpu, drawable, descriptor in
                 guard let drawable, let descriptor else { print("No context"); return }
-                guard drawOperation.fragmentTextures.count > 0, drawOperation.fragmentBuffers.count > 0 else { print("No textures or buffers yet..."); return }
-                try! await gpu.execute(drawable: drawable, descriptor: descriptor) { drawOperation }
+                guard Self.drawOperation.fragmentTextures.count > 0, Self.drawOperation.fragmentBuffers.count > 0 else { print("No textures or buffers yet..."); return }
+                try! await gpu.execute(drawable: drawable, descriptor: descriptor) { Self.drawOperation }
             }
         
         
         
         Task {
+            sleep(1)
             let _ = try! await RendererManager.render(
                 gpu: .default,
                 samples: samples,
@@ -188,8 +200,8 @@ struct PathTracingView: View {
                 scene: scene,
                 camera: camera,
                 frame: 0) { texture, rescale in
-                    drawOperation.fragmentTextures = [texture]
-                    drawOperation.fragmentBuffers = [Buffer(name: "Rescale", [Float(rescale)], usage: .sparse)]
+                    PathTracingView.drawOperation.fragmentTextures = [texture]
+                    PathTracingView.drawOperation.fragmentBuffers = [Buffer(name: "Rescale", [Float(rescale)], usage: .sparse)]
                 }
         }
     }
@@ -211,8 +223,13 @@ struct PathTracingView: View {
                             .frame(width: geometry.size.height * CGFloat(aspectRatio), height: geometry.size.height)
                     }
                 }
+                .onAppear {
+                    appeared = true
+                }
                 .onReceive(timer) { _ in
-                    view.draw()
+                    if appeared {
+                        view.draw()
+                    }
                 }
             }
         }.aspectRatio(CGFloat(aspectRatio), contentMode: .fit)

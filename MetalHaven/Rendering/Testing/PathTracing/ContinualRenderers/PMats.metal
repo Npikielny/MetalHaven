@@ -26,9 +26,9 @@ void sampleMat(device Ray & ray, Intersection intersection, device HaltonSampler
     ray.origin = intersection.p;
 }
 
-Out smat(Ray ray, Intersection intersection, device HaltonSampler & sampler, constant MaterialDescription * matTypes, constant char * mats) {
+MaterialSample sampleBSDF(Ray ray, Intersection intersection, device HaltonSampler & sampler, constant MaterialDescription * matTypes, constant char * mats) {
     MaterialDescription desc = matTypes[intersection.materialId];
-    Out o;
+    MaterialSample o;
     o.eta = 1;
     switch (desc.type) {
         case MIRROR: {
@@ -41,18 +41,28 @@ Out smat(Ray ray, Intersection intersection, device HaltonSampler & sampler, con
             Dielectric mat = *(constant Dielectric *)(mats + desc.index);
             float c = dot(-ray.direction, intersection.n);
             float f = fresnel(c, 1.000277f, mat.IOR);
-            bool entering = dot(ray.direction, intersection.n) < 0;
+            bool entering = -c < 0;
             float eta1 = entering ? 1.000277f : mat.IOR;
             float eta2 = entering ? mat.IOR : 1.000277f;
             
             if (generateSample(sampler) < f) {
                 // reflect
-                o.dir = reflect(ray.direction, intersection.n);
+                float3 n = intersection.n * (entering ? -1 : 1);
+//                o.dir = ray.direction + 2 * n * dot(ray.direction, intersection.n);
+                o.dir = reflect(ray.direction, n);
                 o.sample = 1;
             } else {
                 // refract
                 float eta = (eta1 / eta2);
-                o.dir = refract(ray.direction, intersection.n * (entering ? 1 : -1), eta);
+                
+                float3 n = intersection.n * (entering ? -1 : 1);
+                float3 orthog = ray.direction + intersection.n * c;
+                orthog *= eta;
+                
+                o.dir = orthog + sqrt(1 - eta * eta * (1 - c * c)) * n;
+//                float l = length(orthog);
+//                o.dir = orthog + sqrt(1 - l * l) * n;
+                
                 o.eta /= eta;
                 o.sample = mat.reflectance;
             }
@@ -62,8 +72,10 @@ Out smat(Ray ray, Intersection intersection, device HaltonSampler & sampler, con
         case MICROFACET: {}
         case BASIC: {
             float3 dir = sampleCosineHemisphere(generateVec(sampler));
-            o.dir = toWorld(dir,
-                            intersection.frame);
+            o.dir = toWorld(dir, intersection.frame);
+            if (dot(o.dir, intersection.n) * dot(-ray.direction, intersection.n) < 0) {
+                o.dir *= -1;
+            }
             o.sample = getReflectance(desc, mats);
             o.pdf = cosineHemispherePdf(dir);
             break;
@@ -100,7 +112,7 @@ void pathMatsIntegrator(uint tid [[thread_position_in_grid]],
                 ray.result += emission * ray.throughput;
             }
             
-            Out o = smat(ray, intersection, sampler, matTypes, materials);
+            MaterialSample o = sampleBSDF(ray, intersection, sampler, matTypes, materials);
             ray.direction = o.dir;
             ray.throughput *= o.sample;
             ray.eta *= o.eta;
@@ -118,7 +130,7 @@ void pathMatsIntegrator(uint tid [[thread_position_in_grid]],
                 return;
             }
             
-            Out o = smat(ray, intersection, sampler, matTypes, materials);
+            MaterialSample o = sampleBSDF(ray, intersection, sampler, matTypes, materials);
             ray.direction = o.dir;
             ray.throughput *= o.sample / cont;
             ray.eta *= o.eta;

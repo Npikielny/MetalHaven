@@ -10,7 +10,7 @@ import MetalAbstract
 struct PMats: ContinualIntegrator {
     var generator: Generator = PRNG()
     
-    var regenProbability: Float { /*1 / 300*/0 }
+    var regenProbability: Float { 1 / 300 }
     
     var singlePass: Bool { true }
     
@@ -19,7 +19,4 @@ struct PMats: ContinualIntegrator {
     var integrator = ComputeShader.Function(name: "pathMatsIntegrator")
     
     typealias State = ()
-    
-    func initialize(scene: GeometryScene, imageSize: SIMD2<Int>) {}
-    func generateState(frame: Int, imageSize: SIMD2<Int>) -> () {}
 }
