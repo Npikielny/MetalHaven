@@ -42,4 +42,12 @@ class Camera {
         self.fov = fov
         self.imageSize = imageSize
     }
+    
+    static var boxCamera: Camera {
+        let o = SIMD3<Float>(0, 1, 5)
+        let t = SIMD3<Float>(0, 0.7, 0)
+        let d = normalize(t - o)
+        
+        return Camera(position: o, forward: d, fov: 8 * 27.7856 / 180 * Double.pi, imageSize: SIMD2<Int>(800, 600))
+    }
 }

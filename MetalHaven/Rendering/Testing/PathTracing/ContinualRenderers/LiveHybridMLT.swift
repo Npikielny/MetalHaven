@@ -15,7 +15,7 @@ class LiveHybridMLT: ContinualIntegrator {
     
     var singlePass: Bool { true }
     
-    var intersectionsPerSample: Int { 2 }
+    var intersectionsPerSample: Int { 3 }
     
     var integrator = ComputeShader.Function(name: "hybridBidir")
     

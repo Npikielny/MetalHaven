@@ -42,9 +42,25 @@ CornerVert getCornerVerts(uint vid [[vertex_id]]) {
     return vert;
 }
 
+[[vertex]]
+CornerVert getCornerVertsFlipped(uint vid [[vertex_id]]) {
+    CornerVert vert;
+    float2 p = corners[vid];
+    vert.position = float4(p, 0, 1);
+    vert.uv = p * 0.5 + 0.5;
+    vert.uv.y = 1 - vert.uv.y;
+    return vert;
+}
+
 [[fragment]]
 float4 clearTexture(CornerVert in [[stage_in]]) {
     return float4(float3(0), 1);
+}
+
+[[kernel]]
+void clearTextureKernel(uint2 tid [[thread_position_in_grid]],
+                        texture2d<float, access::write>tex) {
+    tex.write(float4(float3(0), 1), tid);
 }
 
 constexpr metal::sampler sam(metal::min_filter::bicubic, metal::mag_filter::bicubic, metal::mip_filter::none);

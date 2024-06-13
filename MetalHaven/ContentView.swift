@@ -23,29 +23,32 @@ var tracingGpu: GPU = GPU(
 
 struct ContentView: View {
     var body: some View {
-        let width = 800
-        let height = width * 600 / 800
-//        let height = 10
-        let o = SIMD3<Float>(0, 0.919769, 5.41159)
-        let t = SIMD3<Float>(0, 0.893051, 4.41198)
-//        let o = SIMD3<Float>(0, 1, 5)
-//        let t = SIMD3<Float>(0, 0.7, 0)
-//        let o = SIMD3<Float>(0, 243, 0)
-//        let t = SIMD3<Float>(0, 0, 0)
-        let d = t - o
-        let camera = Camera(position: o, forward: d, fov: 27.7856, imageSize: SIMD2<Int>(width, height))
-//        let camera = Camera(position: o, forward: d, fov: Double.pi / 2, imageSize: SIMD2<Int>(width, height))
-        PathTracingView(
-            scene: .sphereArray,
-            camera: camera,
-            samples: Int(2048),
-            antialiased: true,
-            renderer: ContinualRenderer(integrator: LiveHybridMLT(), generator: PRNG())
-        ).onAppear {
-            
-//            HybridBidir()
-//                .luminaryPath(gpu: .default, rng: PRNG(), scene: .boxScene, lights: LightingSampler(scene: .boxScene), camera: camera)
-        }
+//        let width = 800
+//        let height = width * 600 / 800
+////        let height = 10
+//        let o = SIMD3<Float>(0, 0.919769, 5.41159)
+//        let t = SIMD3<Float>(0, 0.893051, 4.41198)
+////        let o = SIMD3<Float>(0, 1, 5)
+////        let t = SIMD3<Float>(0, 0.7, 0)
+////        let o = SIMD3<Float>(0, 243, 0)
+////        let t = SIMD3<Float>(0, 0, 0)
+//        let d = t - o
+//        let camera = Camera(position: o, forward: d, fov: 27.7856, imageSize: SIMD2<Int>(width, height))
+////        let camera = Camera(position: o, forward: d, fov: Double.pi / 2, imageSize: SIMD2<Int>(width, height))
+//        PathTracingView(
+//            scene: .sphereArray,
+//            camera: camera,
+//            samples: Int(2048),
+//            antialiased: true,
+//            renderer: ContinualRenderer(integrator: LiveHybridMLT(), generator: PRNG())
+//        ).onAppear {
+//            
+////            HybridBidir()
+////                .luminaryPath(gpu: .default, rng: PRNG(), scene: .boxScene, lights: LightingSampler(scene: .boxScene), camera: camera)
+//        }
+        
+        RenderingSandbox()
+        
 //        FluidSim2D(gpu: .default, n: 300, rng: PRNG(), bins: 30)
 //        PathTracingView(
 //            scene: .boxScene,

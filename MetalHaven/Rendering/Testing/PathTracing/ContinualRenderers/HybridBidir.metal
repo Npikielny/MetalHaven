@@ -126,3 +126,90 @@ void hybridBidir(uint tid [[thread_position_in_grid]],
         }
     }
 }
+
+//[[kernel]]
+//void hybrid(uint tid [[thread_position_in_grid]],
+//            constant uint & rayCount,
+//            device Ray * rays,
+//            constant Intersection * intersections,
+//            device Ray * samplingRays,
+//            constant Intersection * samplingTests,
+//            device Ray * emitterRays,
+//            constant Intersection * emitterTests,
+//            constant char * scene,
+//            constant GeometryType * types,
+//            constant MaterialDescription * matTypes,
+//            constant char * materials,
+//            device HaltonSampler * samplers,
+//            constant AreaLight * lights,
+//            constant float & totalArea,
+//            constant ShadingPoint * shadingPoints,
+//            constant uint & shadingPointCount
+//            ) {
+//    if (tid >= rayCount)
+//        return;
+//    device Ray & ray = rays[tid];
+//    constant Intersection & intersection = intersections[tid];
+//    
+//    device Ray & sampleRay = samplingRays[tid];
+//    constant Intersection & sampleTest = samplingTests[tid];
+//    
+//    device Ray & emitterRay = emitterRays[tid];
+//    constant Intersection & emitterTest = emitterTests[tid];
+//    
+//    device HaltonSampler & sampler = samplers[tid];
+//    switch (ray.state) {
+//        case FINISHED: { return; }
+//        case WAITING: {
+//            if (abs(sampleTest.t - sampleRay.expected) < 1e-4) {
+//                ray.result += sampleRay.result;
+//            }
+//            if (abs(emitterTest.t - emitterRay.expected) < 1e-4) {
+//                ray.result += sampleRay.result;
+//            }
+//            sampleRay.state = FINISHED;
+//            emitterRay.state = FINISHED;
+//            ray.state = FINISHED;
+//            return;
+//        }
+//        case OLD: {
+//            addShadowRay(ray, sampleRay, sampleTest);
+//            addShadowRay(ray, emitterRay, emitterTest);
+//            ray.result += getEmission(matTypes[intersection.materialId], materials) * max(0.f, dot(-ray.direction, intersection.n)) * ray.throughput * ray.mis;
+//            
+//            roulette(ray, sampler);
+//            
+//            auto next = sampleBSDF(ray, intersection, sampler, matTypes, materials);
+//            ray.throughput *= next.sample;
+//            generateShadowRay(ray, intersection, sampleRay, matTypes, scene, types, shadingPoints[int(shadingPointCount * generateSample(sampler))], totalArea, true);
+//            generateShadowRay(ray, intersection, emitterRay, matTypes, scene, types, shadingPoints[int(shadingPointCount * generateSample(sampler))], totalArea, true);
+//            ray.direction = next.dir;
+//            ray.origin = intersection.p;
+//            ray.eta *= next.eta;
+//            if (matSamplingStrategy(matTypes[intersection.materialId].type) == DISCRETE) {
+//                ray.mis = 1;
+//            } else {
+//                ray.mis = next.pdf / (next.pdf + 1 / totalArea);
+//            }
+//            return;
+//        }
+//        case TRACING: {
+//            ray.result += getEmission(matTypes[intersection.materialId], materials) * max(0.f, dot(-ray.direction, intersection.n));
+//            
+//            auto next = sampleBSDF(ray, intersection, sampler, matTypes, materials);
+//            ray.throughput *= next.sample;
+//            generateShadowRay(ray, intersection, shadowRay, matTypes, scene, types, shadingPoints[int(shadingPointCount * generateSample(sampler))], totalArea, true);
+//            ray.direction = next.dir;
+//            ray.origin = intersection.p;
+//            ray.eta *= next.eta;
+//            if (matSamplingStrategy(matTypes[intersection.materialId].type) == DISCRETE) {
+//                ray.mis = 1;
+//            } else {
+//                ray.mis = next.pdf / (next.pdf + 1 / totalArea);
+//            }
+//            
+//            ray.state = OLD;
+//            return;
+//        }
+//    }
+//}

@@ -23,6 +23,7 @@ struct Bounce {
 protocol Material {
     var type: MaterialType { get }
     var reflectance: SIMD3<Float> { get }
+    var emission: SIMD3<Float> { get }
     
     func sample(generator: inout Generator, incident: Vec3) -> (outgoing: Vec3, pdf: Double, throughput: Vec3)
     
@@ -34,6 +35,7 @@ extension Material {
     static var stride: Int {
         MemoryLayout<Self>.stride
     }
+    var emission: SIMD3<Float> { .zero }
 }
 
 extension BasicMaterial: Material {
