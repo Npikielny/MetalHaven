@@ -67,7 +67,7 @@ struct BVH {
         )
     }
     
-    private let tree: BoundingVolume
+    let tree: BoundingVolume
     
     private init(volume: BoundingVolume) {
         self.tree = volume

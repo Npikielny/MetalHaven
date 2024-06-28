@@ -49,7 +49,7 @@ struct ContentView: View {
         
         RenderingSandbox()
             .onAppear {
-                BVH.create(geometry: try! MeshLoader.load(name: "bunny", material: 0))
+                print("DEPTH: \(BVH.create(geometry: try! MeshLoader.load(name: "bunny", material: 0)).tree.depth())")
             }
         
 //        FluidSim2D(gpu: .default, n: 300, rng: PRNG(), bins: 30)
