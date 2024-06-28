@@ -19,13 +19,17 @@ enum RayState {
 typedef struct Ray {
     vector_float3 origin;
     vector_float3 direction;
+} Ray;
+
+typedef struct ShadingRay {
+    Ray ray;
     vector_float3 throughput;
     vector_float3 result;
     float eta;
     float expected; 
     float mis;
     enum RayState state;
-} Ray;
+} ShadingRay;
 
 typedef struct Frame {
     vector_float3 up;
@@ -47,6 +51,7 @@ typedef struct ShadingPoint {
 } ShadingPoint;
 
 struct Ray createRay(vector_float3 origin, vector_float3 direction);
+struct ShadingRay createShadingRay(vector_float3 origin, vector_float3 direction);
 //struct Ray cameraRay(vector_float3 origin, metal::float4x4 projection, float2 uv);
 
 Intersection createIntersection(float t, vector_float3 p, vector_float3 n, unsigned int materialId, Frame frame);

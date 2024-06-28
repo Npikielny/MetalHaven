@@ -48,6 +48,9 @@ struct ContentView: View {
 //        }
         
         RenderingSandbox()
+            .onAppear {
+                BVH.create(geometry: try! MeshLoader.load(name: "bunny", material: 0))
+            }
         
 //        FluidSim2D(gpu: .default, n: 300, rng: PRNG(), bins: 30)
 //        PathTracingView(

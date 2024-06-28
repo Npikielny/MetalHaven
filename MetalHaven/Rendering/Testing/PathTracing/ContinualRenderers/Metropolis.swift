@@ -88,7 +88,7 @@ class Metropolis: ContinualIntegrator {
         ))
         let radiance = dot(dir, start.n) * start.emission
         
-        var ray = createRay(start.p, dir)
+        var ray = createShadingRay(start.p, dir)
         ray.state = TRACING
         ray.result = radiance
         var cont: Float = 1
@@ -98,7 +98,7 @@ class Metropolis: ContinualIntegrator {
             ray.state = OLD
             ray.result /= cont
             
-            let intersection = trace(ray: ray, scene: scene.geometry)
+            let intersection = trace(ray: ray.ray, scene: scene.geometry)
             if intersection.t == .infinity {
                 ray.state = FINISHED
                 continue
@@ -110,9 +110,9 @@ class Metropolis: ContinualIntegrator {
                     irradiance: ray.result
                 )
             )
-            ray.origin = intersection.p
-            ray.direction = next.dir
-            ray.result *= abs(dot(-ray.direction, intersection.n)) * next.sample
+            ray.ray.origin = intersection.p
+            ray.ray.direction = next.dir
+            ray.result *= abs(dot(-ray.ray.direction, intersection.n)) * next.sample
             
 //            if iterations >= 2 {
                 cont = min(ray.result.max() * ray.eta * ray.eta, 0.99)

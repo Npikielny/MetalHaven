@@ -24,7 +24,7 @@ struct RendererManager {
         return res
     }
     
-    private static func sum(gpu: GPU, destinations: [Texture], rays: Buffer<Ray>, samples: Int) async throws {
+    private static func sum(gpu: GPU, destinations: [Texture], rays: Buffer<ShadingRay>, samples: Int) async throws {
         try await gpu.execute {
             ComputeShader(
                 name: "accumulate",
@@ -73,7 +73,7 @@ extension Renderer {
     static func clearRaysAndIntersections(
         gpu: GPU,
         size: SIMD2<Int>,
-        rays: Buffer<Ray>,
+        rays: Buffer<ShadingRay>,
         rng: Generator?,
         intersections: Buffer<Intersection>,
         camera: Camera
@@ -141,7 +141,7 @@ struct SequenceRenderer<T: SequenceIntersector, K: SequenceIntegrator>: Renderer
         let count = size.x * size.y
 //        let rays = Buffer<Ray>(count: count, type: Ray.self)
 //        let intersections = Buffer<Intersection>(count: count, type: Intersection.self)
-        let rays = Buffer<Ray>(name: "Rays", Array(repeating: Ray(), count: count), usage: .shared)
+        let rays = Buffer<ShadingRay>(name: "Rays", Array(repeating: ShadingRay(), count: count), usage: .shared)
         let intersections = Buffer<Intersection>(name: "Intersections", Array(repeating: Intersection(), count: count), usage: .shared)
         
         try await Self.clearTextures(gpu: gpu, textures: destinations)
@@ -179,7 +179,7 @@ struct SequenceRenderer<T: SequenceIntersector, K: SequenceIntegrator>: Renderer
         return destinations[0]
     }
     
-    private static func sum(gpu: GPU, destinations: [Texture], rays: Buffer<Ray>, samples: Int) async throws {
+    private static func sum(gpu: GPU, destinations: [Texture], rays: Buffer<ShadingRay>, samples: Int) async throws {
         try await gpu.execute {
             ComputeShader(
                 name: "accumulate",
@@ -223,7 +223,7 @@ struct ContinualRenderer<T: ContinualIntegrator>: Renderer {
         
         let queries = (0..<integrator.intersectionsPerSample).map { _ in
             (
-                Buffer(count: pixelCount, type: Ray.self),
+                Buffer(count: pixelCount, type: ShadingRay.self),
                 Buffer(count: pixelCount, type: Intersection.self)
             )
         }

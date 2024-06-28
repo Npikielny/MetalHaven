@@ -13,7 +13,7 @@ class TestIntersectionsIntegrator: SequenceIntegrator {
     
     required init() {}
     
-    func integrate(gpu: GPU, state: (), rays: Buffer<Ray>, intersections: Buffer<Intersection>, intersector: SequenceIntersector, emitters: [Light], materials: [Material]) async throws {
+    func integrate(gpu: GPU, state: (), rays: Buffer<ShadingRay>, intersections: Buffer<Intersection>, intersector: SequenceIntersector, emitters: [Light], materials: [Material]) async throws {
         
     }
 }
@@ -56,7 +56,7 @@ class TestIntersectionsIntersector: SequenceIntersector {
         return geom.stride
     }
     
-    func intersect(gpu: GPU, rays: Buffer<Ray>, intersections: Buffer<Intersection>, indicator: Buffer<Bool>) async throws {
+    func intersect(gpu: GPU, rays: Buffer<ShadingRay>, intersections: Buffer<Intersection>, indicator: Buffer<Bool>) async throws {
         print("genning")
         try! await gpu.execute {
             ComputeShader(
@@ -103,7 +103,7 @@ class TestMPSIntersector: SequenceIntersector {
     
     func intersect(
         gpu: GPU,
-        rays: Buffer<Ray>,
+        rays: Buffer<ShadingRay>,
         intersections: Buffer<Intersection>,
         indicator: Buffer<Bool>
     ) async throws {

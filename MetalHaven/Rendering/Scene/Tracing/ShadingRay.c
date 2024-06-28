@@ -13,6 +13,13 @@ Ray createRay(vector_float3 origin, vector_float3 direction) {
     Ray r;
     r.origin = origin;
     r.direction = direction;
+    return r;
+}
+
+ShadingRay createShadingRay(vector_float3 origin, vector_float3 direction) {
+    ShadingRay r;
+    r.ray.origin = origin;
+    r.ray.direction = direction;
     r.state = TRACING;
     r.throughput = 1.0;
     r.result = 0.0;

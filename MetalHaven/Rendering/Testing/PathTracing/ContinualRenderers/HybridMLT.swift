@@ -83,7 +83,7 @@ struct MLT: ContinualIntegrator {
             ))
             let radiance = dot(dir, start.n) * start.emission
             
-            var ray = createRay(start.p, dir)
+            var ray = createShadingRay(start.p, dir)
             ray.state = TRACING
             ray.result = radiance
             var cont: Float = 1
@@ -93,15 +93,15 @@ struct MLT: ContinualIntegrator {
                 ray.state = OLD
                 ray.result /= cont
                 
-                let intersection = trace(ray: ray, scene: scene.geometry)
+                let intersection = trace(ray: ray.ray, scene: scene.geometry)
                 if intersection.t == .infinity {
                     ray.state = FINISHED
                     continue
                 }
                 let next = smat(ray: ray, intersection: intersection, scene: scene, generator: generator.generate)
-                ray.origin = intersection.p
-                ray.direction = next.dir
-                ray.result *= abs(dot(-ray.direction, intersection.n)) * next.sample
+                ray.ray.origin = intersection.p
+                ray.ray.direction = next.dir
+                ray.result *= abs(dot(-ray.ray.direction, intersection.n)) * next.sample
                 currentIntersections.append(
                     ShadingPoint(
                         intersection: intersection,

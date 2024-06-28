@@ -11,7 +11,7 @@ import MetalAbstract
 struct RayDirectionRenderer: SimpleRenderer {
     let shader = ComputeShader(name: "rayDirections", buffers: [], textures: [], threadGroupSize: MTLSize(width: 8, height: 8, depth: 1), dispatchSize: ThreadGroupDispatchWrapper())
     
-    func renderScene(gpu: GPU, camera: Camera, sceneManager: SceneManager, rays: Buffer<Ray>, texture: Texture) async throws -> [Shader] {
+    func renderScene(gpu: GPU, camera: Camera, sceneManager: SceneManager, rays: Buffer<ShadingRay>, texture: Texture) async throws -> [Shader] {
         shader.buffers = [
             rays
         ]

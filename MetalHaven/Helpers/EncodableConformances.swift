@@ -12,7 +12,7 @@ extension float3x3: GPUEncodable {}
 
 // Tracing
 extension Intersection: GPUEncodable {}
-extension Ray: GPUEncodable {}
+extension ShadingRay: GPUEncodable {}
 
 // Geometry
 extension PointLight: GPUEncodable {}

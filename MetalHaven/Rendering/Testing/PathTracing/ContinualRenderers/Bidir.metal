@@ -9,15 +9,15 @@
 #import "../PathTracing.h"
 using namespace metal;
 
-float sampleRay(device Ray & ray, constant Intersection & intersection, device HaltonSampler & sampler, constant MaterialDescription * matTypes, constant char * materials) {
+float sampleRay(device ShadingRay & ray, constant Intersection & intersection, device HaltonSampler & sampler, constant MaterialDescription * matTypes, constant char * materials) {
     auto next = sampleBSDF(ray, intersection, sampler, matTypes, materials);
-    ray.direction = next.dir;
-    ray.origin = intersection.p;
+    ray.ray.direction = next.dir;
+    ray.ray.origin = intersection.p;
     ray.throughput *= next.sample;
     return next.pdf;
 }
 
-bool roulette(device Ray & ray, device HaltonSampler & sampler) {
+bool roulette(device ShadingRay & ray, device HaltonSampler & sampler) {
     float cont = min(maxComponent(ray.throughput) * ray.eta * ray.eta, 0.99f);
     if (generateSample(sampler) > cont) {
         ray.state = WAITING;
@@ -30,11 +30,11 @@ bool roulette(device Ray & ray, device HaltonSampler & sampler) {
 [[kernel]]
 void bidir(uint tid [[thread_position_in_grid]],
            constant uint & rayCount,
-           device Ray * rays,
+           device ShadingRay * rays,
            constant Intersection * intersections,
-           device Ray * emitterRays,
+           device ShadingRay * emitterRays,
            constant Intersection * emitterIntersections,
-           device Ray * shadowRays,
+           device ShadingRay * shadowRays,
            constant Intersection * shadowTests,
            constant char * scene,
            constant GeometryType * types,
@@ -45,11 +45,11 @@ void bidir(uint tid [[thread_position_in_grid]],
            constant float & totalArea) {
     if (tid >= rayCount)
         return;
-    device Ray & ray = rays[tid];
+    device ShadingRay & ray = rays[tid];
     constant Intersection & intersection = intersections[tid];
-    device Ray & emitterRay = emitterRays[tid];
+    device ShadingRay & emitterRay = emitterRays[tid];
     constant Intersection & emitterIntersection = emitterIntersections[tid];
-    device Ray & shadowRay = shadowRays[tid];
+    device ShadingRay & shadowRay = shadowRays[tid];
     constant Intersection & shadowTest = shadowTests[tid];
     device HaltonSampler & sampler = samplers[tid];
     switch (ray.state) {
@@ -65,7 +65,7 @@ void bidir(uint tid [[thread_position_in_grid]],
         }
         case OLD: {
             float3 emission = getEmission(matTypes[intersection.materialId], materials);
-            ray.result += emission * ray.mis * ray.throughput * max(0.f, dot(-ray.direction, intersection.n));
+            ray.result += emission * ray.mis * ray.throughput * max(0.f, dot(-ray.ray.direction, intersection.n));
             if (shadowRay.expected > 0 && shadowTest.t >= shadowRay.expected - 1e-4) {
                 ray.result += shadowRay.result;
             }
@@ -84,8 +84,8 @@ void bidir(uint tid [[thread_position_in_grid]],
                 if (pdf > 0) {
                     //                float mis = pdf / pdf + (1 / totalArea);
                     shadowRay.result = ray.throughput * emitterRay.throughput * max(0.f, dot(dir, intersection.n)) * max(0.f, dot(-dir, emitterIntersection.n)) / (pdf == 0 ? 1 : pdf);
-                    shadowRay.origin = intersection.p;
-                    shadowRay.direction = dir;
+                    shadowRay.ray.origin = intersection.p;
+                    shadowRay.ray.direction = dir;
                     shadowRay.expected = d;
                 } else {
                     shadowRay.expected = -1;
@@ -103,7 +103,7 @@ void bidir(uint tid [[thread_position_in_grid]],
             }
             LuminarySample l = sampleLuminaries(lights, totalArea, sampler, scene, types);
             // will need to change to frame to change dirs!
-            emitterRay = createRay(l.p, l.n);
+            emitterRay = createShadingRay(l.p, l.n);
             emitterRay.throughput *= totalArea;
             emitterRay.result = lights[0].color;
             
@@ -122,8 +122,8 @@ void bidir(uint tid [[thread_position_in_grid]],
                 if (pdf > 0) {
                     //                float mis = pdf / pdf + (1 / totalArea);
                     shadowRay.result = ray.throughput * emitterRay.throughput * max(0.f, dot(dir, intersection.n)) * max(0.f, dot(-dir, l.n)) / (pdf == 0 ? 1 : pdf);
-                    shadowRay.origin = intersection.p;
-                    shadowRay.direction = dir;
+                    shadowRay.ray.origin = intersection.p;
+                    shadowRay.ray.direction = dir;
                     shadowRay.expected = d;
                 } else {
                     shadowRay.expected = -1;

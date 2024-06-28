@@ -11,7 +11,7 @@ using namespace metal;
 
 [[kernel]]
 void pathEms(uint tid [[thread_position_in_grid]],
-             device Ray * rays,
+             device ShadingRay * rays,
              constant uint & rayCount,
              device Intersection * intersections,
              constant char * materials,
@@ -27,19 +27,19 @@ void pathEms(uint tid [[thread_position_in_grid]],
     if (tid >= rayCount)
         return;
     
-    device Ray & ray = rays[tid];
+    device ShadingRay & ray = rays[tid];
     device Intersection & intersection = intersections[tid];
     
     switch (ray.state) {
         case WAITING: { ray.state = FINISHED; }
         case FINISHED: { return; }
         case TRACING: {
-            intersection = trace(ray, scene, types, objectCount);
+            intersection = trace(ray.ray, scene, types, objectCount);
             if (intersection.t == INFINITY) {
                 ray.state = FINISHED;
                 return;
             } else {
-                float cos = -dot(ray.direction, intersection.n);
+                float cos = -dot(ray.ray.direction, intersection.n);
                 ray.result += ray.throughput * getEmission(matTypes[intersection.materialId], materials) * max(0.f, cos);
                 ray.throughput *= abs(cos) * getReflectance(matTypes[intersection.materialId], materials);
                 ray.state = OLD;
@@ -53,10 +53,10 @@ void pathEms(uint tid [[thread_position_in_grid]],
             if (p.bsdf == SOLID_ANGLE) {
                 LuminarySample l = sampleLuminaries(lights, totalArea, sampler, scene, types);
                 float3 dir = normalize(l.p - intersection.p);
-                if (dot(-ray.direction, intersection.n) * dot(dir, intersection.n) > 0 && dot(-dir, n) > 0) {
-                    Ray shadowRay = createRay(intersection.p + dir * 1e-4, dir);
-                    Intersection shadow = trace(shadowRay, scene, types, objectCount);
-                    if (abs(shadow.t - distance(shadowRay.origin, l.p)) < 1e-4) {
+                if (dot(-ray.ray.direction, intersection.n) * dot(dir, intersection.n) > 0 && dot(-dir, n) > 0) {
+                    ShadingRay shadowRay = createShadingRay(intersection.p + dir * 1e-4, dir);
+                    Intersection shadow = trace(shadowRay.ray, scene, types, objectCount);
+                    if (abs(shadow.t - distance(shadowRay.ray.origin, l.p)) < 1e-4) {
                         float attenuation = max(0.f, -dot(dir, n)) * abs(dot(intersection.n, dir)) / shadow.t / shadow.t;
                         ray.result += ray.throughput * getEmission(matTypes[shadow.materialId], materials) * totalArea * attenuation;
                     }
@@ -66,7 +66,7 @@ void pathEms(uint tid [[thread_position_in_grid]],
             }
             ray.throughput *= p.throughput;
             intersection = p.intersection;
-            ray.direction = p.direction;
+            ray.ray.direction = p.direction;
         }
     }
     indicator = true;

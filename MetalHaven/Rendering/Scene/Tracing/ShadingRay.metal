@@ -14,6 +14,13 @@ Ray createRay(float3 origin, float3 direction) {
     Ray r;
     r.origin = origin;
     r.direction = direction;
+    return r;
+}
+
+
+ShadingRay createShadingRay(float3 origin, float3 direction) {
+    ShadingRay r;
+    r.ray = createRay(origin, direction);
     r.state = TRACING;
     r.throughput = 1.0;
     r.result = 0.0;
@@ -23,9 +30,9 @@ Ray createRay(float3 origin, float3 direction) {
     return r;
 }
 
-Ray cameraRay(float3 origin, float3x3 projection, float2 uv) {
+ShadingRay cameraRay(float3 origin, float3x3 projection, float2 uv) {
     float3 pos = projection * float3(uv * 2 - 1, 1);
-    return createRay(origin, pos);
+    return createShadingRay(origin, pos);
 }
 
 Intersection createIntersection(float t, vector_float3 p, vector_float3 n, uint materialId, Frame frame) {

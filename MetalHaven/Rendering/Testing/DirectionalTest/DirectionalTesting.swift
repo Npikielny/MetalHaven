@@ -49,7 +49,7 @@ class DirectionalTestIntersector: SequenceIntersector {
         geometryBuffer = Buffer(scene.geometry as! [Sphere], usage: .managed)
     }
     
-    func intersect(gpu: GPU, rays: Buffer<Ray>, intersections: Buffer<Intersection>, indicator: Buffer<Bool>) async throws {
+    func intersect(gpu: GPU, rays: Buffer<ShadingRay>, intersections: Buffer<Intersection>, indicator: Buffer<Bool>) async throws {
         try await gpu.execute {
             ComputeShader(
                 name: "directionalTesting",
@@ -82,7 +82,7 @@ class DirectionalTestIntegrator: SequenceIntegrator {
     func integrate(
         gpu: GPU,
         state: (),
-        rays: Buffer<Ray>,
+        rays: Buffer<ShadingRay>,
         intersections: Buffer<Intersection>,
         intersector: SequenceIntersector,
         emitters: [Light],

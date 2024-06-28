@@ -22,13 +22,13 @@ struct PathSection {
     float3 throughput;
 };
 
-PathSection matSample(Ray in, Intersection intersection, constant char * materials, constant MaterialDescription * matTypes, constant char * scene, constant GeometryType * types, constant uint & objectCount, device HaltonSampler & sampler);
+PathSection matSample(ShadingRay in, Intersection intersection, constant char * materials, constant MaterialDescription * matTypes, constant char * scene, constant GeometryType * types, constant uint & objectCount, device HaltonSampler & sampler);
 
-MaterialSample sampleBSDF(Ray ray, Intersection intersection, device HaltonSampler & sampler, constant MaterialDescription * matTypes, constant char * mats);
+MaterialSample sampleBSDF(ShadingRay ray, Intersection intersection, device HaltonSampler & sampler, constant MaterialDescription * matTypes, constant char * mats);
 
-void sampleShadowRay(Ray ray,
+void sampleShadowRay(ShadingRay ray,
                   Intersection intersection,
-                  device Ray & shadowRay,
+                  device ShadingRay & shadowRay,
                   constant MaterialDescription * matTypes,
                   constant char * scene,
                   constant GeometryType * types,
@@ -38,9 +38,9 @@ void sampleShadowRay(Ray ray,
                   bool mis
                   );
 
-void generateShadowRay(Ray ray,
+void generateShadowRay(ShadingRay ray,
                        Intersection intersection,
-                       device Ray & shadowRay,
+                       device ShadingRay & shadowRay,
                        constant MaterialDescription * matTypes,
                        constant char * scene,
                        constant GeometryType * types,
@@ -49,7 +49,7 @@ void generateShadowRay(Ray ray,
                        bool mis
                        );
 
-void addShadowRay(device Ray & ray, Ray shadowRay, Intersection shadowTest);
+void addShadowRay(device ShadingRay & ray, ShadingRay shadowRay, Intersection shadowTest);
 
-bool roulette(device Ray & ray, device HaltonSampler & sampler);
+bool roulette(device ShadingRay & ray, device HaltonSampler & sampler);
 #endif /* SampleMat_h */

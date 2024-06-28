@@ -105,7 +105,7 @@ class DirectEmsIntersector: SequenceIntersector, SequenceIntegrator {
         totalAreaBuffer.reset([lightSampler.totalArea], usage: .sparse)
     }
     
-    func intersect(gpu: GPU, rays: Buffer<Ray>, intersections: Buffer<Intersection>, indicator: Buffer<Bool>) async throws {
+    func intersect(gpu: GPU, rays: Buffer<ShadingRay>, intersections: Buffer<Intersection>, indicator: Buffer<Bool>) async throws {
         indicator[0] = false
         if rng.generate() < 1 / 100 {
             print("new rng")
@@ -137,7 +137,7 @@ class DirectEmsIntersector: SequenceIntersector, SequenceIntegrator {
         try await gpu.execute { shader }
     }
     
-    func integrate(gpu: GPU, state: (), rays: Buffer<Ray>, intersections: Buffer<Intersection>, intersector: SequenceIntersector, emitters: [Light], materials: [Material]) async throws {
+    func integrate(gpu: GPU, state: (), rays: Buffer<ShadingRay>, intersections: Buffer<Intersection>, intersector: SequenceIntersector, emitters: [Light], materials: [Material]) async throws {
         
     }
 }

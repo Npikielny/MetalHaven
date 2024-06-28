@@ -45,7 +45,7 @@ float fres(float cosThetaI, float extIOR, float intIOR) {
 
 [[kernel]]
 void pathMis(uint tid [[thread_position_in_grid]],
-             device Ray * rays,
+             device ShadingRay * rays,
              constant uint & rayCount,
              device Intersection * intersections,
              constant char * materials,
@@ -61,51 +61,51 @@ void pathMis(uint tid [[thread_position_in_grid]],
     if (tid >= rayCount)
         return;
     
-    device Ray & ray = rays[tid];
+    device ShadingRay & ray = rays[tid];
     device Intersection & intersection = intersections[tid];
     device HaltonSampler & sampler = samplers[tid];
     switch (ray.state) {
         case WAITING: { ray.state = FINISHED; }
         case FINISHED: { return; }
         case TRACING: {
-            intersection = trace(ray, scene, types, objectCount);
+            intersection = trace(ray.ray, scene, types, objectCount);
             if (intersection.t == INFINITY) {
                 ray.state = FINISHED;
                 return;
             }
             
             MaterialDescription desc = matTypes[intersection.materialId];
-            if (dot(-ray.direction, intersection.n) > 0) {
+            if (dot(-ray.ray.direction, intersection.n) > 0) {
                 ray.result += getEmission(desc, materials) * ray.throughput;
             }
-            ray.throughput *= getReflectance(desc, materials) * abs(dot(-ray.direction, intersection.n));
+            ray.throughput *= getReflectance(desc, materials) * abs(dot(-ray.ray.direction, intersection.n));
             switch (matTypes[intersection.materialId].type) {
                 case DIELECTRIC: {
                     Dielectric mat = *(constant Dielectric *)(materials + matTypes[intersection.materialId].index);
-                    float c = dot(-ray.direction, intersection.n);
+                    float c = dot(-ray.ray.direction, intersection.n);
                     float f = fres(c, 1.000277f, mat.IOR);
-                    bool entering = dot(ray.direction, intersection.n) < 0;
+                    bool entering = dot(ray.ray.direction, intersection.n) < 0;
                     float eta1 = entering ? 1.000277f : mat.IOR;
                     float eta2 = entering ? mat.IOR : 1.000277f;
 
                     if (generateSample(sampler) < f) {
                         // reflect
-                        ray.direction = reflect(ray.direction, intersection.n);
-                        ray.origin = intersection.p + ray.direction * 1e-4;
+                        ray.ray.direction = reflect(ray.ray.direction, intersection.n);
+                        ray.ray.origin = intersection.p + ray.ray.direction * 1e-4;
                     } else {
                         // refract
                         float eta = (eta1 / eta2);
-                        ray.direction = refract(ray.direction, intersection.n * (entering ? 1 : -1), eta);
+                        ray.ray.direction = refract(ray.ray.direction, intersection.n * (entering ? 1 : -1), eta);
                         ray.eta /= eta;
                     }
-                    ray.origin = intersection.p + ray.direction * 1e-4;
+                    ray.ray.origin = intersection.p + ray.ray.direction * 1e-4;
                     ray.state = TRACING;
                     indicator = true;
                     return;
                 }
                 case MIRROR: {
-                    ray.direction = reflect(ray.direction, intersection.n);
-                    ray.origin = intersection.p + ray.direction * 1e-4;
+                    ray.ray.direction = reflect(ray.ray.direction, intersection.n);
+                    ray.ray.origin = intersection.p + ray.ray.direction * 1e-4;
                     ray.state = TRACING;
                     indicator = true;
                     return;
@@ -121,27 +121,27 @@ void pathMis(uint tid [[thread_position_in_grid]],
             float invArea = 1 / totalArea;
             LuminarySample l = sampleLuminaries(lights, totalArea, sampler, scene, types);
             float3 lumDir = normalize(l.p - intersection.p);
-            Ray luminaryRay = createRay(intersection.p + lumDir * 1e-4, lumDir);
-            bool isValid = dot(-ray.direction, intersection.n) * dot(lumDir, intersection.n) > 0; // makes sure we're not doing a luminary sample that passes through the surface
+            ShadingRay luminaryRay = createShadingRay(intersection.p + lumDir * 1e-4, lumDir);
+            bool isValid = dot(-ray.ray.direction, intersection.n) * dot(lumDir, intersection.n) > 0; // makes sure we're not doing a luminary sample that passes through the surface
 //            bool isValid = true;
-            Intersection shadowTest = trace(luminaryRay, scene, types, objectCount);
-            if (isValid && -dot(lumDir, l.n) > 0 && abs(distance(luminaryRay.origin, l.p) - abs(shadowTest.t)) < 1e-4)  {
-                float3 emsResult = ray.throughput * getEmission(matTypes[shadowTest.materialId], materials) * abscos(luminaryRay.direction, intersection.n) * abscos(luminaryRay.direction, l.n) / (shadowTest.t * shadowTest.t) * totalArea;
+            Intersection shadowTest = trace(luminaryRay.ray, scene, types, objectCount);
+            if (isValid && -dot(lumDir, l.n) > 0 && abs(distance(luminaryRay.ray.origin, l.p) - abs(shadowTest.t)) < 1e-4)  {
+                float3 emsResult = ray.throughput * getEmission(matTypes[shadowTest.materialId], materials) * abscos(luminaryRay.ray.direction, intersection.n) * abscos(luminaryRay.ray.direction, l.n) / (shadowTest.t * shadowTest.t) * totalArea;
                 
                 
-                float3 pt = float3(dot(intersection.frame.right, luminaryRay.direction),
-                                   dot(intersection.frame.forward, luminaryRay.direction),
-                                   dot(intersection.frame.up, luminaryRay.direction));
+                float3 pt = float3(dot(intersection.frame.right, luminaryRay.ray.direction),
+                                   dot(intersection.frame.forward, luminaryRay.ray.direction),
+                                   dot(intersection.frame.up, luminaryRay.ray.direction));
                 
                 
-                float emsPdf = invArea * abscos(luminaryRay.direction, intersection.n) / shadowTest.t / shadowTest.t;
+                float emsPdf = invArea * abscos(luminaryRay.ray.direction, intersection.n) / shadowTest.t / shadowTest.t;
                 emsPdf = emsPdf / (emsPdf + cosineHemispherePdf(pt));
                 ray.result += emsResult * emsPdf;
             }
             
             // MARK: - MATS
             PathSection p = matSample(ray, intersection, materials, matTypes, scene, types, objectCount, sampler);
-            ray.direction = p.direction;
+            ray.ray.direction = p.direction;
             ray.result += p.result * p.pdf / (p.pdf + invArea);
             intersection = p.intersection;
             auto desc = matTypes[intersection.materialId];

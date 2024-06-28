@@ -120,41 +120,41 @@ Bounce sampleBSDF(float3 wi, Frame frame, MaterialDescription desc, constant cha
     return b;
 }
 
-PathSection matSample(Ray in, Intersection intersection, constant char * materials, constant MaterialDescription * matTypes, constant char * scene, constant GeometryType * types, constant uint & objectCount, device HaltonSampler & sampler) {
-    in.origin = intersection.p;
+PathSection matSample(ShadingRay in, Intersection intersection, constant char * materials, constant MaterialDescription * matTypes, constant char * scene, constant GeometryType * types, constant uint & objectCount, device HaltonSampler & sampler) {
+    in.ray.origin = intersection.p;
     
 //    float3 dir = sampleCosineHemisphere(generateVec(sampler));
-    Bounce bounce = sampleBSDF(in.direction, intersection.frame, matTypes[intersection.materialId], materials, sampler);
-    in.direction = bounce.wo;
-    in.origin += in.direction * 1e-4;
+    Bounce bounce = sampleBSDF(in.ray.direction, intersection.frame, matTypes[intersection.materialId], materials, sampler);
+    in.ray.direction = bounce.wo;
+    in.ray.origin += in.ray.direction * 1e-4;
 //    in.throughput *= bounce.sample;
-    Intersection next = trace(in, scene, types, objectCount);
+    Intersection next = trace(in.ray, scene, types, objectCount);
     MaterialDescription mat = matTypes[next.materialId];
     
     PathSection p;
-    p.direction = in.direction;
+    p.direction = in.ray.direction;
     p.intersection = next;
     p.pdf = bounce.pdf;
-    p.result = -dot(in.direction, next.n) > 0 ? in.throughput * getEmission(mat, materials) : 0.;
+    p.result = -dot(in.ray.direction, next.n) > 0 ? in.throughput * getEmission(mat, materials) : 0.;
     p.bsdf = bounce.bsdf;
     p.eta = bounce.eta;
-    p.throughput = getReflectance(matTypes[next.materialId], materials) * abs(dot(in.direction, next.n));
+    p.throughput = getReflectance(matTypes[next.materialId], materials) * abs(dot(in.ray.direction, next.n));
     return p;
 };
 
 
 [[kernel]]
 void pathMatsIntersection(uint tid [[thread_position_in_grid]],
-                          device Ray * rays,
+                          device ShadingRay * rays,
                           device Intersection * intersections,
                           constant char * scene,
                           constant GeometryType * types,
                           constant uint & objectCount,
                           device bool & notConverged) {
-    device Ray & ray = rays[tid];
+    device ShadingRay & ray = rays[tid];
     if (ray.state == FINISHED) { return; }
     device Intersection & intersection = intersections[tid];
-    intersection = trace(ray, scene, types, objectCount);
+    intersection = trace(ray.ray, scene, types, objectCount);
     
     if (intersection.t != INFINITY) {
         notConverged = true;
@@ -165,7 +165,7 @@ void pathMatsIntersection(uint tid [[thread_position_in_grid]],
 
 [[kernel]]
 void pathMatsShading(uint tid [[thread_position_in_grid]],
-                     device Ray * rays,
+                     device ShadingRay * rays,
                      constant uint & rayCount,
                      device Intersection * intersections,
                      constant char * materials,
@@ -174,51 +174,51 @@ void pathMatsShading(uint tid [[thread_position_in_grid]],
     if (tid > rayCount)
         return;
     
-    device Ray & ray = rays[tid];
+    device ShadingRay & ray = rays[tid];
     if (ray.state == FINISHED)
         return;
     Intersection intersection = intersections[tid];
     if (intersection.t < INFINITY) {
         MaterialDescription desc = matTypes[intersection.materialId];
-        ray.result += getEmission(desc, materials) * ray.throughput * max(0.f, dot(-ray.direction, intersection.n));
+        ray.result += getEmission(desc, materials) * ray.throughput * max(0.f, dot(-ray.ray.direction, intersection.n));
         ray.state = OLD;
         
         device HaltonSampler & sam = samplers[tid];
         float2 sample = generateVec(sam);
         switch (desc.type) {
             case MIRROR: {
-                ray.direction = reflect(ray.direction, intersection.n);
-                ray.origin = intersection.p + ray.direction * 1e-4;
+                ray.ray.direction = reflect(ray.ray.direction, intersection.n);
+                ray.ray.origin = intersection.p + ray.ray.direction * 1e-4;
                 break;
             }
             case DIELECTRIC: {
                 Dielectric mat = *(constant Dielectric *)(materials + matTypes[intersection.materialId].index);
-                float c = dot(-ray.direction, intersection.n);
+                float c = dot(-ray.ray.direction, intersection.n);
                 float f = fresnel(c, 1.000277f, mat.IOR);
-                bool entering = dot(ray.direction, intersection.n) < 0;
+                bool entering = dot(ray.ray.direction, intersection.n) < 0;
                 float eta1 = entering ? 1.000277f : mat.IOR;
                 float eta2 = entering ? mat.IOR : 1.000277f;
 
                 if (generateSample(sam) < f) {
                     // reflect
-                    ray.direction = reflect(ray.direction, intersection.n);
-                    ray.origin = intersection.p + ray.direction * 1e-4;
+                    ray.ray.direction = reflect(ray.ray.direction, intersection.n);
+                    ray.ray.origin = intersection.p + ray.ray.direction * 1e-4;
                 } else {
                     // refract
                     float eta = (eta1 / eta2);
-                    ray.direction = refract(ray.direction, intersection.n * (entering ? 1 : -1), eta);
+                    ray.ray.direction = refract(ray.ray.direction, intersection.n * (entering ? 1 : -1), eta);
                     ray.eta /= eta;
                 }
-                ray.origin = intersection.p + ray.direction * 1e-4;
+                ray.ray.origin = intersection.p + ray.ray.direction * 1e-4;
                 break;
             }
             case BASIC: {
                 float3 dir = sampleCosineHemisphere(sample);
                 
-                ray.direction = toWorld(dir, intersection.frame);
+                ray.ray.direction = toWorld(dir, intersection.frame);
         //        float cos = abs(dot(ray.direction, intersection.n));
                 ray.throughput *= /*cos **/ getReflectance(desc, materials);// / uniformHemispherePdf(dir);// * abs(cos);
-                ray.origin = intersection.p + ray.direction * 1e-4;
+                ray.ray.origin = intersection.p + ray.ray.direction * 1e-4;
             }
         }
         

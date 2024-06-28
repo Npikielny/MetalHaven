@@ -9,9 +9,9 @@
 #import "../PathTracing.h"
 using namespace metal;
 
-void generateShadowRay(Ray ray,
+void generateShadowRay(ShadingRay ray,
                        Intersection intersection,
-                       device Ray & shadowRay,
+                       device ShadingRay & shadowRay,
                        constant MaterialDescription * matTypes,
                        constant char * scene,
                        constant GeometryType * types,
@@ -25,15 +25,15 @@ void generateShadowRay(Ray ray,
         dir /= d;
         
         float attenuation = abs(dot(dir, intersection.n)) * max(0.f, dot(-dir, shadingPoint.intersection.n));
-        if (attenuation == 0 || (dot(-ray.direction, intersection.n) * dot(dir, intersection.n)) < 0) {
+        if (attenuation == 0 || (dot(-ray.ray.direction, intersection.n) * dot(dir, intersection.n)) < 0) {
             shadowRay.expected = -INFINITY;
             shadowRay.state = FINISHED;
             shadowRay.result = 0;
             return;
         }
         
-        shadowRay.origin = intersection.p;
-        shadowRay.direction = dir;
+        shadowRay.ray.origin = intersection.p;
+        shadowRay.ray.direction = dir;
         shadowRay.expected = d;
         shadowRay.state = TRACING;
         shadowRay.result = shadingPoint.irradiance * attenuation * ray.throughput * totalArea;
@@ -56,9 +56,9 @@ void generateShadowRay(Ray ray,
 [[kernel]]
 void hybridBidir(uint tid [[thread_position_in_grid]],
                  constant uint & rayCount,
-                 device Ray * rays,
+                 device ShadingRay * rays,
                  constant Intersection * intersections,
-                 device Ray * shadowRays,
+                 device ShadingRay * shadowRays,
                  constant Intersection * shadowTests,
                  constant char * scene,
                  constant GeometryType * types,
@@ -72,9 +72,9 @@ void hybridBidir(uint tid [[thread_position_in_grid]],
                  ) {
     if (tid >= rayCount)
         return;
-    device Ray & ray = rays[tid];
+    device ShadingRay & ray = rays[tid];
     constant Intersection & intersection = intersections[tid];
-    device Ray & shadowRay = shadowRays[tid];
+    device ShadingRay & shadowRay = shadowRays[tid];
     constant Intersection & shadowTest = shadowTests[tid];
     device HaltonSampler & sampler = samplers[tid];
     switch (ray.state) {
@@ -89,15 +89,15 @@ void hybridBidir(uint tid [[thread_position_in_grid]],
         }
         case OLD: {
             addShadowRay(ray, shadowRay, shadowTest);
-            ray.result += getEmission(matTypes[intersection.materialId], materials) * max(0.f, dot(-ray.direction, intersection.n)) * ray.throughput * ray.mis;
+            ray.result += getEmission(matTypes[intersection.materialId], materials) * max(0.f, dot(-ray.ray.direction, intersection.n)) * ray.throughput * ray.mis;
             
             roulette(ray, sampler);
             
             auto next = sampleBSDF(ray, intersection, sampler, matTypes, materials);
             ray.throughput *= next.sample;
             generateShadowRay(ray, intersection, shadowRay, matTypes, scene, types, shadingPoints[int(shadingPointCount * generateSample(sampler))], totalArea, true);
-            ray.direction = next.dir;
-            ray.origin = intersection.p;
+            ray.ray.direction = next.dir;
+            ray.ray.origin = intersection.p;
             ray.eta *= next.eta;
             if (matSamplingStrategy(matTypes[intersection.materialId].type) == DISCRETE) {
                 ray.mis = 1;
@@ -107,13 +107,13 @@ void hybridBidir(uint tid [[thread_position_in_grid]],
             return;
         }
         case TRACING: {
-            ray.result += getEmission(matTypes[intersection.materialId], materials) * max(0.f, dot(-ray.direction, intersection.n));
+            ray.result += getEmission(matTypes[intersection.materialId], materials) * max(0.f, dot(-ray.ray.direction, intersection.n));
             
             auto next = sampleBSDF(ray, intersection, sampler, matTypes, materials);
             ray.throughput *= next.sample;
             generateShadowRay(ray, intersection, shadowRay, matTypes, scene, types, shadingPoints[int(shadingPointCount * generateSample(sampler))], totalArea, true);
-            ray.direction = next.dir;
-            ray.origin = intersection.p;
+            ray.ray.direction = next.dir;
+            ray.ray.origin = intersection.p;
             ray.eta *= next.eta;
             if (matSamplingStrategy(matTypes[intersection.materialId].type) == DISCRETE) {
                 ray.mis = 1;

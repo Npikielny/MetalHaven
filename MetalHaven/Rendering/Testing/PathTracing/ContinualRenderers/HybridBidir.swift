@@ -54,7 +54,7 @@ struct HybridBidir: ContinualIntegrator {
             ))
             let radiance = dot(dir, start.n) * start.emission
             
-            var ray = createRay(start.p, dir)
+            var ray = createShadingRay(start.p, dir)
             ray.state = TRACING
             ray.result = radiance
             var cont: Float = 1
@@ -65,15 +65,15 @@ struct HybridBidir: ContinualIntegrator {
                 ray.state = OLD
                 ray.result /= cont
                 
-                let intersection = trace(ray: ray, scene: scene.geometry)
+                let intersection = trace(ray: ray.ray, scene: scene.geometry)
                 if intersection.t == .infinity {
                     ray.state = FINISHED
                     continue
                 }
                 let next = smat(ray: ray, intersection: intersection, scene: scene, generator: generator.generate)
-                ray.origin = intersection.p
-                ray.direction = next.dir
-                ray.result *= abs(dot(-ray.direction, intersection.n)) * next.sample
+                ray.ray.origin = intersection.p
+                ray.ray.direction = next.dir
+                ray.result *= abs(dot(-ray.ray.direction, intersection.n)) * next.sample
                 intersections.append(
                     ShadingPoint(
                         intersection: intersection,
@@ -94,7 +94,7 @@ struct HybridBidir: ContinualIntegrator {
     }
 }
 
-func smat(ray: Ray, intersection: Intersection, scene: GeometryScene, generator: () -> Float) -> MaterialSample {
+func smat(ray: ShadingRay, intersection: Intersection, scene: GeometryScene, generator: () -> Float) -> MaterialSample {
     let material = scene.materials[Int(intersection.materialId)]
     switch material.type {
         case BASIC:
@@ -108,28 +108,28 @@ func smat(ray: Ray, intersection: Intersection, scene: GeometryScene, generator:
         case MIRROR:
             return MaterialSample(
                 sample: material.reflectance,
-                dir: reflect(ray.direction, n: intersection.n),
+                dir: reflect(ray.ray.direction, n: intersection.n),
                 eta: 1,
                 pdf: 1
             )
         case DIELECTRIC:
             let mat = material as! Dielectric
-            let c = dot(-ray.direction, intersection.n)
+            let c = dot(-ray.ray.direction, intersection.n)
             let f = fresnel(c, 1.000277, mat.IOR)
             
-            let entering = dot(ray.direction, intersection.n) < 0
+            let entering = dot(ray.ray.direction, intersection.n) < 0
             let eta1 = entering ? 1.000277 : mat.IOR
             let eta2 = entering ? mat.IOR : 1.000277
             
             var sample = MaterialSample()
             sample.pdf = 1
             if generator() < f {
-                sample.dir = reflect(ray.direction, n: intersection.n)
+                sample.dir = reflect(ray.ray.direction, n: intersection.n)
                 sample.sample = mat.reflectance
                 sample.eta = 1
             } else {
                 let eta = eta1 / eta2
-                sample.dir = refract(ray.direction, n: intersection.n, eta: eta)
+                sample.dir = refract(ray.ray.direction, n: intersection.n, eta: eta)
                 sample.eta = 1 / eta
                 sample.sample = mat.reflectance
             }

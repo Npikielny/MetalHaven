@@ -21,7 +21,7 @@ struct NormalRenderer: SimpleRenderer {
         gpu: GPU,
         camera: Camera,
         sceneManager: SceneManager,
-        rays: Buffer<Ray>,
+        rays: Buffer<ShadingRay>,
         texture: Texture
     ) async throws -> [Shader] {
 //        let raw = try await texture.encode(gpu)

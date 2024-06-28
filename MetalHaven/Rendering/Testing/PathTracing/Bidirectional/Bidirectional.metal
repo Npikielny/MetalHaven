@@ -84,7 +84,7 @@ bool isValid(float3 in, float3 n, float3 out) {
 
 [[kernel]]
 void bidirectional(uint tid [[thread_position_in_grid]],
-             device Ray * rays,
+             device ShadingRay * rays,
              constant uint & rayCount,
              device Intersection * intersections,
              constant char * materials,
@@ -98,18 +98,18 @@ void bidirectional(uint tid [[thread_position_in_grid]],
              device bool & indicator) {
     if (tid >= rayCount)
         return;
-    device Ray & ray = rays[tid];
+    device ShadingRay & ray = rays[tid];
     if (ray.state == FINISHED)
         return;
     device HaltonSampler & sampler = samplers[tid];
     // path mats
-    Intersection intersection = trace(ray, scene, types, objectCount);
+    Intersection intersection = trace(ray.ray, scene, types, objectCount);
     if (intersection.t == INFINITY)
         return;
     MaterialDescription mat = matTypes[intersection.materialId];
     ray.result = getEmission(mat, materials);
-    ray.throughput *= getReflectance(mat, materials) * abs(dot(intersection.n, ray.direction));
-    ray.origin = intersection.p;
+    ray.throughput *= getReflectance(mat, materials) * abs(dot(intersection.n, ray.ray.direction));
+    ray.ray.origin = intersection.p;
 //    ray.throughput /= (intersection.t * intersection.t);
     
 //    PathSection p = matSample(ray, intersection, materials, matTypes, scene, types, objectCount, sampler);
@@ -146,11 +146,11 @@ void bidirectional(uint tid [[thread_position_in_grid]],
     ray.throughput *= max(dot(dir, l.n), 0.f) * abs(dot(dir, first.n)) / (first.t * first.t);
     
     float3 connect = normalize(first.p - intersection.p);
-    if (isValid(ray.direction, intersection.n, connect) && isValid(dir, first.n, -connect)) {
-        ray.direction = connect;
-        ray.origin += connect * 1e-4;
-        Intersection shadow = trace(ray, scene, types, objectCount);
-        if (abs(shadow.t - distance(ray.origin, first.p)) < 1e-4) {
+    if (isValid(ray.ray.direction, intersection.n, connect) && isValid(dir, first.n, -connect)) {
+        ray.ray.direction = connect;
+        ray.ray.origin += connect * 1e-4;
+        Intersection shadow = trace(ray.ray, scene, types, objectCount);
+        if (abs(shadow.t - distance(ray.ray.origin, first.p)) < 1e-4) {
             ray.throughput *= abs(dot(connect, intersection.n) * dot(connect, first.n)) / (shadow.t * shadow.t);
 
             ray.result += light.color * ray.throughput;

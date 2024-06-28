@@ -12,9 +12,9 @@ using namespace metal;
 [[kernel]]
 void mlt(uint tid [[thread_position_in_grid]],
                  constant uint & rayCount,
-                 device Ray * rays,
+                 device ShadingRay * rays,
                  constant Intersection * intersections,
-                 device Ray * shadowRays,
+                 device ShadingRay * shadowRays,
                  constant Intersection * shadowTests,
                  constant char * scene,
                  constant GeometryType * types,
@@ -28,9 +28,9 @@ void mlt(uint tid [[thread_position_in_grid]],
                  ) {
     if (tid >= rayCount)
         return;
-    device Ray & ray = rays[tid];
+    device ShadingRay & ray = rays[tid];
     constant Intersection & intersection = intersections[tid];
-    device Ray & shadowRay = shadowRays[tid];
+    device ShadingRay & shadowRay = shadowRays[tid];
     constant Intersection & shadowTest = shadowTests[tid];
     device HaltonSampler & sampler = samplers[tid];
     switch (ray.state) {
@@ -48,7 +48,7 @@ void mlt(uint tid [[thread_position_in_grid]],
             return;
         }
         case TRACING: {
-            ray.result += getEmission(matTypes[intersection.materialId], materials) * max(0.f, dot(-ray.direction, intersection.n));
+            ray.result += getEmission(matTypes[intersection.materialId], materials) * max(0.f, dot(-ray.ray.direction, intersection.n));
 //
             auto next = sampleBSDF(ray, intersection, sampler, matTypes, materials);
             ray.throughput *= next.sample;
@@ -59,8 +59,8 @@ void mlt(uint tid [[thread_position_in_grid]],
                 ray.state = OLD;
                 generateShadowRay(ray, intersection, shadowRay, matTypes, scene, types, shadingPoints[0], totalArea, false);
             }
-            ray.direction = next.dir;
-            ray.origin = intersection.p;
+            ray.ray.direction = next.dir;
+            ray.ray.origin = intersection.p;
             ray.eta *= next.eta;
             return;
         }
@@ -70,9 +70,9 @@ void mlt(uint tid [[thread_position_in_grid]],
 [[kernel]]
 void mlt2(uint tid [[thread_position_in_grid]],
                  constant uint & rayCount,
-                 device Ray * rays,
+                 device ShadingRay * rays,
                  constant Intersection * intersections,
-                 device Ray * shadowRays,
+                 device ShadingRay * shadowRays,
                  constant Intersection * shadowTests,
                  constant char * scene,
                  constant GeometryType * types,
@@ -86,9 +86,9 @@ void mlt2(uint tid [[thread_position_in_grid]],
                  ) {
     if (tid >= rayCount)
         return;
-    device Ray & ray = rays[tid];
+    device ShadingRay & ray = rays[tid];
     constant Intersection & intersection = intersections[tid];
-    device Ray & shadowRay = shadowRays[tid];
+    device ShadingRay & shadowRay = shadowRays[tid];
     constant Intersection & shadowTest = shadowTests[tid];
     device HaltonSampler & sampler = samplers[tid];
     switch (ray.state) {
@@ -102,7 +102,7 @@ void mlt2(uint tid [[thread_position_in_grid]],
             return;
         }
         case TRACING: {
-            if (dot(-ray.direction, intersection.n) > 0) {
+            if (dot(-ray.ray.direction, intersection.n) > 0) {
                 float3 emission = getEmission(matTypes[intersection.materialId], materials);
                 ray.result += emission * ray.throughput;
             }
@@ -112,10 +112,10 @@ void mlt2(uint tid [[thread_position_in_grid]],
             ray.throughput *= out.sample;
             ray.mis = matSamplingStrategy(matTypes[intersection.materialId].type) == SOLID_ANGLE ? out.pdf / (out.pdf + 1 / totalArea) : 1;
             generateShadowRay(ray, intersection, shadowRay, matTypes, scene, types, shadingPoints[uint(generateSample(sampler) * shadingPointCount)], totalArea, true);
-            ray.origin = intersection.p;
+            ray.ray.origin = intersection.p;
             
             ray.state = OLD;
-            ray.direction = out.dir;
+            ray.ray.direction = out.dir;
             ray.eta *= out.eta;
             
             return;
@@ -123,7 +123,7 @@ void mlt2(uint tid [[thread_position_in_grid]],
         case OLD: {
             addShadowRay(ray, shadowRay, shadowTest);
             float3 emission = getEmission(matTypes[intersection.materialId], materials);
-            ray.result += emission * ray.throughput * max(0.f, dot(-ray.direction, intersection.n)) * ray.mis;
+            ray.result += emission * ray.throughput * max(0.f, dot(-ray.ray.direction, intersection.n)) * ray.mis;
             
             if (roulette(ray, sampler))
                 return;
@@ -133,8 +133,8 @@ void mlt2(uint tid [[thread_position_in_grid]],
             ray.throughput *= out.sample;
             generateShadowRay(ray, intersection, shadowRay, matTypes, scene, types, shadingPoints[uint(generateSample(sampler) * shadingPointCount)], totalArea, true);
             
-            ray.origin = intersection.p;
-            ray.direction = out.dir;
+            ray.ray.origin = intersection.p;
+            ray.ray.direction = out.dir;
             ray.eta *= out.eta;
         }
     }}

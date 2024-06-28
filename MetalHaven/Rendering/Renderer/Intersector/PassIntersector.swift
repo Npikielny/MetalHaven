@@ -23,7 +23,7 @@ class PassIntersector: SequenceIntersector {
     
     func intersect(
         gpu: GPU,
-        rays: Buffer<Ray>,
+        rays: Buffer<ShadingRay>,
         intersections: Buffer<Intersection>,
         indicator: Buffer<Bool>
     ) async {
@@ -38,7 +38,7 @@ class PassIntegrator: SequenceIntegrator {
     
     var maxIterations: Int? = 30
     
-    func integrate(gpu: GPU, state: (), rays: Buffer<Ray>, intersections: Buffer<Intersection>, intersector: SequenceIntersector, emitters: [Light], materials: [Material]) async throws {
+    func integrate(gpu: GPU, state: (), rays: Buffer<ShadingRay>, intersections: Buffer<Intersection>, intersector: SequenceIntersector, emitters: [Light], materials: [Material]) async throws {
         
     }
     

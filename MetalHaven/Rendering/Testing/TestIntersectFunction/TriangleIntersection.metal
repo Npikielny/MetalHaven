@@ -11,10 +11,10 @@ using namespace metal;
 
 [[kernel]]
 void integrateTriangle(uint tid [[thread_position_in_grid]],
-               device Ray * rays,
+               device ShadingRay * rays,
                constant uint & rayCount) {
     if (tid >= rayCount)
         return;
-    device Ray & ray = rays[tid];
+    device ShadingRay & ray = rays[tid];
     ray.result = float3(0, 0, 1);
 }

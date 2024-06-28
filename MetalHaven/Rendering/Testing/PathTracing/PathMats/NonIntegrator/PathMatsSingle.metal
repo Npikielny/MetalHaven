@@ -11,7 +11,7 @@ using namespace metal;
 
 [[kernel]]
 void pathMatsSingle(uint tid [[thread_position_in_grid]],
-                    device Ray * rays,
+                    device ShadingRay * rays,
                     constant uint & rayCount,
                     device Intersection * intersections,
                     constant char * materials,
@@ -26,7 +26,7 @@ void pathMatsSingle(uint tid [[thread_position_in_grid]],
     if (tid >= rayCount)
         return;
     
-    device Ray & ray = rays[tid];
+    device ShadingRay & ray = rays[tid];
     device Intersection & intersection = intersections[tid];
     
     switch (ray.state) {
@@ -37,7 +37,7 @@ void pathMatsSingle(uint tid [[thread_position_in_grid]],
             intersection = section.intersection;
             ray.result += section.result;
             ray.throughput *= section.throughput;
-            ray.direction = section.direction;
+            ray.ray.direction = section.direction;
             ray.eta *= section.eta;
             ray.throughput /= ray.eta * ray.eta;
 //            float cont = min(maxComponent(ray.throughput) * ray.eta * ray.eta, 0.99f);
@@ -50,12 +50,12 @@ void pathMatsSingle(uint tid [[thread_position_in_grid]],
             break;
         }
         case TRACING: {
-            intersection = trace(ray, scene, types, objectCount);
+            intersection = trace(ray.ray, scene, types, objectCount);
             if (intersection.t == INFINITY) {
                 ray.state = FINISHED;
                 return;
             }
-            float cos = abs(dot(ray.direction, intersection.n));
+            float cos = abs(dot(ray.ray.direction, intersection.n));
             MaterialDescription desc = matTypes[intersection.materialId];
             ray.result += cos * getEmission(desc, materials);
             ray.throughput *= cos * getReflectance(desc, materials);

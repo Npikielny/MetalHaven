@@ -90,7 +90,7 @@ float4 dynamicTexture(CornerVert in [[stage_in]],
 [[kernel]]
 void generateRays(uint tid [[thread_position_in_grid]],
                   constant uint2 & size,
-                  device Ray * rays,
+                  device ShadingRay * rays,
                   constant float3x3 & projection,
                   constant float3 & center,
                   constant float2 & offset) {
@@ -103,7 +103,7 @@ void generateRays(uint tid [[thread_position_in_grid]],
     
     float3 dir = normalize(projection * float3(uv, 1));
     
-    rays[tid] = createRay(center, dir);
+    rays[tid] = createShadingRay(center, dir);
 }
 
 [[kernel]]
@@ -115,11 +115,11 @@ void generateNullIntersections(uint tid [[thread_position_in_grid]],
 // Accumulation
 [[kernel]]
 void accumulate(uint2 tid [[thread_position_in_grid]],
-                constant Ray * rays,
+                constant ShadingRay * rays,
                 constant uint & samples,
                 texture2d<float, access::read> in,
                 texture2d<float, access::write> out) {
-    Ray ray = rays[tid.x + tid.y * in.get_width()];
+    ShadingRay ray = rays[tid.x + tid.y * in.get_width()];
     float3 previous = in.read(tid).xyz;
     
     out.write(float4(previous + ray.result / float(samples), 1), tid);
@@ -127,7 +127,7 @@ void accumulate(uint2 tid [[thread_position_in_grid]],
 
 [[kernel]]
 void intersect(uint tid [[thread_position_in_grid]],
-                       device Ray * rays,
+                       device ShadingRay * rays,
                        constant uint & rayCount,
                        device Intersection * intersections,
                        constant char * scene,
@@ -136,14 +136,14 @@ void intersect(uint tid [[thread_position_in_grid]],
     if (tid >= rayCount)
         return;
     device Intersection & intersection = intersections[tid];
-    device Ray & ray = rays[tid];
+    device ShadingRay & ray = rays[tid];
     switch (ray.state) {
         case WAITING:
         case FINISHED: { return; }
         case TRACING: {}
         case OLD: {
-            ray.origin += ray.direction * 1e-4;
-            intersection = trace(ray, scene, types, objectCount);
+            ray.ray.origin += ray.ray.direction * 1e-4;
+            intersection = trace(ray.ray, scene, types, objectCount);
             if (intersection.t == INFINITY) {
                 ray.state = WAITING;
                 return;
@@ -155,7 +155,7 @@ void intersect(uint tid [[thread_position_in_grid]],
 
 [[kernel]]
 void cleanAndAccumulate(uint tid [[thread_position_in_grid]],
-                        device Ray * rays,
+                        device ShadingRay * rays,
                         constant uint & chunkOffset,
                         constant uint & rayCount,
                         device uint * samples,
@@ -173,7 +173,7 @@ void cleanAndAccumulate(uint tid [[thread_position_in_grid]],
     uint s = samples[tid];
     if (s > max)
         return;
-    device Ray & ray = rays[tid];
+    device ShadingRay & ray = rays[tid];
     
     uint x = (tid + chunkOffset) % width;
     uint y = (tid + chunkOffset) / width;
@@ -203,7 +203,7 @@ void cleanAndAccumulate(uint tid [[thread_position_in_grid]],
         float2 uv = float2(x, y) / float2(size) * 2 - 1 + jitter;
         
         float3 dir = normalize(projection * float3(uv, 1));
-        rays[tid] = createRay(center, dir);
+        rays[tid] = createShadingRay(center, dir);
     }
     
     indicator = true;

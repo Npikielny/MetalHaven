@@ -21,7 +21,7 @@ protocol SequenceIntersector: Intersector {
     
     func intersect(
         gpu: GPU,
-        rays: Buffer<Ray>,
+        rays: Buffer<ShadingRay>,
         intersections: Buffer<Intersection>,
         indicator: Buffer<Bool>
     ) async throws

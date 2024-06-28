@@ -8,12 +8,15 @@
 import MetalAbstract
 
 protocol Geometry {
-//    var position: SIMD3<Float> { get set }
+    var centroid:  SIMD3<Float> { get }
+    //    var position: SIMD3<Float> { get set }
     var material: Int32 { get set }
     var geometryType: GeometryType { get }
     
     func intersect(ray: Ray) -> Intersection
-//    func sample(sample: SIMD2<Float>) -> (position: SIMD2<Float>, normal: SIMD2<Float>)
+    //    func sample(sample: SIMD2<Float>) -> (position: SIMD2<Float>, normal: SIMD2<Float>)
+    
+    func fit(boxMin: inout SIMD3<Float>, boxMax: inout SIMD3<Float>)
 }
 
 extension Geometry {
@@ -25,26 +28,41 @@ extension Geometry {
 }
 
 extension Sphere: Geometry, GPUEncodable {
-    var geometryType: GeometryType { SPHERE }
+    func fit(boxMin: inout SIMD3<Float>, boxMax: inout SIMD3<Float>) {
+        boxMin = min(boxMin, position - size)
+        boxMax = min(boxMax, position + size)
+    }
     
-//    func sample(sample: SIMD2<Float>) -> (position: SIMD2<Float>, normal: SIMD2<Float>) {
-//        sampleSphere(<#T##sample: vector_float2##vector_float2#>)
-//    }
+    var centroid: SIMD3<Float> { position }
+    var geometryType: GeometryType { SPHERE }
 }
-//extension Box: Geometry {
-//    var geometryType: GeometryType { BOX }
-//}
 
-extension Triangle: GPUEncodable, Geometry {
+protocol TriangleRepresentation: GPUEncodable, Geometry {
+    var v1: vector_float3 { get }
+    var v2: vector_float3 { get }
+    var v3: vector_float3 { get }
+}
+
+extension TriangleRepresentation {
+    var centroid: SIMD3<Float> {
+        (v1 + v2 + v3) / 3
+    }
+    
+    func fit(boxMin: inout SIMD3<Float>, boxMax: inout SIMD3<Float>) {
+        boxMin = min(min(min(boxMin, v1), v2), v3)
+        boxMax = max(max(max(boxMax, v1), v2), v3)
+    }
+}
+
+extension Triangle: TriangleRepresentation {
     var geometryType: GeometryType { TRIANGLE }
 }
 
-extension Plane: GPUEncodable, Geometry {
+extension Plane: TriangleRepresentation {
     var geometryType: GeometryType { PLANE }
-    
 }
 
-extension Square: GPUEncodable, Geometry {
+extension Square: TriangleRepresentation {
     var geometryType: GeometryType { SQUARE }
 }
 

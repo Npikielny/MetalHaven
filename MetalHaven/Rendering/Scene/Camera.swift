@@ -50,4 +50,12 @@ class Camera {
         
         return Camera(position: o, forward: d, fov: 8 * 27.7856 / 180 * Double.pi, imageSize: SIMD2<Int>(800, 600))
     }
+    
+    static var closeCamera: Camera {
+        let o = SIMD3<Float>(0, 0.7, 0.7)
+        let t = SIMD3<Float>(0, 0, 0)
+        let d = normalize(t - o)
+        
+        return Camera(position: o, forward: d, fov: 8 * 27.7856 / 180 * Double.pi, imageSize: SIMD2<Int>(512, 512))
+    }
 }

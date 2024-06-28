@@ -43,7 +43,7 @@ protocol SequenceIntegrator: Integrator {
     func integrate(
         gpu: GPU,
         state: State,
-        rays: Buffer<Ray>,
+        rays: Buffer<ShadingRay>,
         intersections: Buffer<Intersection>,
         intersector: SequenceIntersector,
         emitters: [Light],
@@ -92,7 +92,7 @@ struct ContinualIntegratorUniforms {
 extension ContinualIntegrator {
     func intersect(
         gpu: GPU,
-        queries: [(Buffer<Ray>, Buffer<Intersection>)],
+        queries: [(Buffer<ShadingRay>, Buffer<Intersection>)],
         scene: VoidBuffer,
         geometryTypes: Buffer<GeometryType>
     ) async throws {
@@ -136,7 +136,7 @@ extension ContinualIntegrator {
     
     func integrate(
         gpu: GPU,
-        queries: [(rays: Buffer<Ray>, intersections: Buffer<Intersection>)],
+        queries: [(rays: Buffer<ShadingRay>, intersections: Buffer<Intersection>)],
         uniforms: ContinualIntegratorUniforms
     ) async throws {
         let countBuffer = Buffer<UInt32>([UInt32(queries[0].rays.count)], usage: .sparse)
@@ -164,7 +164,7 @@ extension ContinualIntegrator {
     
     func cleanAndAccumulate(
         gpu: GPU,
-        rays: Buffer<Ray>,
+        rays: Buffer<ShadingRay>,
         samples: Buffer<UInt32>,
         maxSamples: UInt32,
         camera: Camera,
@@ -201,7 +201,7 @@ extension ContinualIntegrator {
         gpu: GPU,
         scene: GeometryScene,
         state: State,
-        queries: [(rays: Buffer<Ray>, intersections: Buffer<Intersection>)],
+        queries: [(rays: Buffer<ShadingRay>, intersections: Buffer<Intersection>)],
         uniform: ContinualIntegratorUniforms,
         sampleCounts: Buffer<UInt32>,
         maxSamples: Int,

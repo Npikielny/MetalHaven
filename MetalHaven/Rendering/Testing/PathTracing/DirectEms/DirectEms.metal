@@ -11,7 +11,7 @@
 using namespace metal;
 [[kernel]]
 void directEms(uint tid [[thread_position_in_grid]],
-             device Ray * rays,
+             device ShadingRay * rays,
              constant uint & rayCount,
              device Intersection * intersections,
              constant char * materials,
@@ -27,24 +27,24 @@ void directEms(uint tid [[thread_position_in_grid]],
     if (tid >= rayCount)
         return;
     
-    device Ray & ray = rays[tid];
+    device ShadingRay & ray = rays[tid];
     if (ray.state == FINISHED)
         return;
     
     device Intersection & intersection = intersections[tid];
-    intersection = trace(ray, scene, types, objectCount);
+    intersection = trace(ray.ray, scene, types, objectCount);
     if (matTypes[intersection.materialId].type == MIRROR) {
-        ray.direction = reflect(ray.direction, intersection.n);
-        ray.origin = intersection.p + ray.direction * 1e-4;
-        intersection = trace(ray, scene, types, objectCount);
+        ray.ray.direction = reflect(ray.ray.direction, intersection.n);
+        ray.ray.origin = intersection.p + ray.ray.direction * 1e-4;
+        intersection = trace(ray.ray, scene, types, objectCount);
     }
     if (intersection.t != INFINITY) {
         MaterialDescription descriptor = matTypes[intersection.materialId];
         ray.result += getEmission(descriptor, materials) * ray.throughput;
-        ray.throughput *= getReflectance(descriptor, materials) * abscos(ray.direction, intersection.n);
+        ray.throughput *= getReflectance(descriptor, materials) * abscos(ray.ray.direction, intersection.n);
         
 //        ray.direction = reflect(ray.direction, intersection.n);
-        ray.origin = intersection.p + intersection.n * 1e-4;// + ray.direction * 1e-4;
+        ray.ray.origin = intersection.p + intersection.n * 1e-4;// + ray.direction * 1e-4;
         
 //        ray.result = ray.throughput;
         device HaltonSampler & sampler = samplers[tid];
@@ -53,17 +53,17 @@ void directEms(uint tid [[thread_position_in_grid]],
 //        n = float3(0, -1, 0);
         
         
-        float3 dir = normalize(l.p - ray.origin);
-        bool isValid = dot(-ray.direction, intersection.n) * dot(intersection.n, dir) > 0;
-        ray.direction = dir;
+        float3 dir = normalize(l.p - ray.ray.origin);
+        bool isValid = dot(-ray.ray.direction, intersection.n) * dot(intersection.n, dir) > 0;
+        ray.ray.direction = dir;
 
-        ray.throughput *= totalArea * abs(dot(ray.direction, intersection.n) * max(0.f, -dot(ray.direction, l.n)));
+        ray.throughput *= totalArea * abs(dot(ray.ray.direction, intersection.n) * max(0.f, -dot(ray.ray.direction, l.n)));
         
-        Intersection shadow = trace(ray, scene, types, objectCount);
+        Intersection shadow = trace(ray.ray, scene, types, objectCount);
         
 //        bool isValid = dot(-ray.direction, shadow.n) * dot(n, out) > 0;
         
-        if (isValid && abs(shadow.t - distance(l.p, ray.origin)) < 1e-4) {
+        if (isValid && abs(shadow.t - distance(l.p, ray.ray.origin)) < 1e-4) {
             ray.result += ray.throughput * getEmission(matTypes[shadow.materialId], materials);
         }
         
@@ -80,8 +80,8 @@ void directEms(uint tid [[thread_position_in_grid]],
         PathSection p = matSample(ray, intersection, materials, matTypes, scene, types, objectCount, sampler);
         intersection = p.intersection;
         ray.throughput *= p.throughput;
-        ray.direction = p.direction;
-        ray.origin = intersection.p + p.direction * 1e-4;
+        ray.ray.direction = p.direction;
+        ray.ray.origin = intersection.p + p.direction * 1e-4;
         
         indicator = true;
     } else {

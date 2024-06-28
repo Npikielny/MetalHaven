@@ -64,7 +64,7 @@ class LiveBidir: ContinualIntegrator {
         ))
         let radiance = dot(dir, start.n) * start.emission
         
-        var ray = createRay(start.p, dir)
+        var ray = createShadingRay(start.p, dir)
         ray.state = TRACING
         ray.result = radiance
         var cont: Float = 1
@@ -74,7 +74,7 @@ class LiveBidir: ContinualIntegrator {
             ray.state = OLD
             ray.result /= cont
             
-            let intersection = trace(ray: ray, scene: scene.geometry)
+            let intersection = trace(ray: ray.ray, scene: scene.geometry)
             if intersection.t == .infinity {
                 ray.state = FINISHED
                 continue
@@ -87,9 +87,9 @@ class LiveBidir: ContinualIntegrator {
                 )
             )
             
-            ray.origin = intersection.p
-            ray.direction = dot(-ray.direction, intersection.n) * dot(next.dir, intersection.n) > 0 ? next.dir : -next.dir
-            ray.result *= abs(dot(-ray.direction, intersection.n)) * next.sample
+            ray.ray.origin = intersection.p
+            ray.ray.direction = dot(-ray.ray.direction, intersection.n) * dot(next.dir, intersection.n) > 0 ? next.dir : -next.dir
+            ray.result *= abs(dot(-ray.ray.direction, intersection.n)) * next.sample
             
             if iterations >= 1 {
                 cont = min(ray.result.max() * ray.eta * ray.eta, 0.99)

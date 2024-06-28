@@ -39,7 +39,7 @@ extension Texture {
 extension ComputeFn {
     static let generateRays = ComputeFn(name: "generateRays")
 }
-extension Buffer<Ray> {
+extension Buffer<ShadingRay> {
     func generate(imageSize: SIMD2<UInt32>, camera: Camera, offset: SIMD2<Float>) -> ComputeShader {
         ComputeShader(
             function: .generateRays,

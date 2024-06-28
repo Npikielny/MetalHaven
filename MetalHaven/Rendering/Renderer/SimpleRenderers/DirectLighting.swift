@@ -21,7 +21,7 @@ struct DirectRenderer: SimpleRenderer {
         gpu: GPU,
         camera: Camera,
         sceneManager: SceneManager,
-        rays: Buffer<Ray>,
+        rays: Buffer<ShadingRay>,
         texture: Texture
     ) async throws -> [Shader] {
         

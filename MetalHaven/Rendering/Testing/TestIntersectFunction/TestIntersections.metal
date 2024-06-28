@@ -14,7 +14,7 @@ using namespace raytracing;
 
 [[kernel]]
 void testIntersections(uint tid [[thread_position_in_grid]],
-                       device Ray * rays,
+                       device ShadingRay * rays,
                        device Intersection * intersections,
                        constant BasicMaterial * materials,
                        constant char * scene,
@@ -23,7 +23,7 @@ void testIntersections(uint tid [[thread_position_in_grid]],
                        device bool & notConverged) {
     notConverged = false;
     
-    device Ray & ray = rays[tid];
+    device ShadingRay & ray = rays[tid];
     device Intersection & intersection = intersections[tid];
     
     constant char * nextObject = scene;
@@ -34,13 +34,13 @@ void testIntersections(uint tid [[thread_position_in_grid]],
             case TRIANGLE: {
                 Triangle tri = *(constant Triangle *)nextObject;
                 nextObject = (constant char *)((constant Triangle *)nextObject + 1);
-                next = planeIntersection(tri, ray);
+                next = planeIntersection(tri, ray.ray);
                 break;
             }
             case SPHERE: {
                 Sphere s = *(constant Sphere *)nextObject;
                 nextObject = (constant char *)((constant Sphere *)nextObject + 1);
-                next = sphereIntersection(ray, s);
+                next = sphereIntersection(ray.ray, s);
                 break;
             }
             default:
@@ -113,7 +113,7 @@ inline float3 interpolateSkyColor(float3 ray) {
 
 [[kernel]]
 void testIntersector(uint tid [[thread_position_in_grid]],
-                     device Ray * rays,
+                     device ShadingRay * rays,
                      device Intersection * intersections,
                      constant BasicMaterial * materials,
                      constant MTLAccelerationStructureInstanceDescriptor *instances,
@@ -122,7 +122,7 @@ void testIntersector(uint tid [[thread_position_in_grid]],
                      device bool & notConverged) {
     notConverged = false;
     
-    device Ray & raySource = rays[tid];
+    device ShadingRay & raySource = rays[tid];
 //    device Intersection & intersectionDest = intersections[tid];
     
     intersector<triangle_data, instancing> i;
@@ -140,9 +140,9 @@ void testIntersector(uint tid [[thread_position_in_grid]],
     
     ray ray;
     // Rays start at the camera position.
-    ray.origin = raySource.origin;
+    ray.origin = raySource.ray.origin;
     // Map the normalized pixel coordinates into the camera's coordinate system.
-    ray.direction = raySource.direction;
+    ray.direction = raySource.ray.direction;
     // Don't limit the intersection distance.
     ray.max_distance = INFINITY;
     float3 worldSpaceSurfaceNormal{0.0f, 0.0f, 0.0f};

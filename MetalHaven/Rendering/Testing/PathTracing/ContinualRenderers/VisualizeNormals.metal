@@ -12,7 +12,7 @@ using namespace metal;
 [[kernel]]
 void visualizeNormals(uint tid [[thread_position_in_grid]],
                       constant uint & rayCount,
-                      device Ray * rays,
+                      device ShadingRay * rays,
                       constant Intersection * intersections,
                       constant char * scene,
                       constant GeometryType * types,
@@ -24,7 +24,7 @@ void visualizeNormals(uint tid [[thread_position_in_grid]],
                       ) {
     if (tid >= rayCount)
         return;
-    device Ray & ray = rays[tid];
+    device ShadingRay & ray = rays[tid];
     constant Intersection & intersection = intersections[tid];
     if (intersection.t == INFINITY)
         return;
