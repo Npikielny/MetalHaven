@@ -13,6 +13,7 @@ protocol SimpleRenderer {
         camera: Camera,
         sceneManager: SceneManager,
         rays: Buffer<ShadingRay>,
+        samplers: Buffer<HaltonSampler>,
         texture: Texture
     ) async throws -> [Shader]
 }

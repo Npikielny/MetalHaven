@@ -9,3 +9,4 @@
 #include "CPUSampling.h"
 #include "Fluid2D.h"
 #include "Core3D.h"
+#include "BVH.h"

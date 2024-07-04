@@ -19,26 +19,49 @@ struct RenderingSandbox: View {
     
     @Expose var settings: RenderingSettings
     
-    let texture: Texture
+    let samplers: Buffer<HaltonSampler>
+    let workingTexture: Texture
+    let destinationTexture: Texture
     let renderingView: MAView
     
     let timer = Timer.publish(every: 1 / 30, on: .main, in: .default).autoconnect()
     
     init() {
+//        let settings = Expose(wrappedValue: RenderingSettings(
+//            camera: RenderingSandbox.defaultCamera,
+//            scene: SceneManager(scene: GeometryScene(lights: [], geometry: try! MeshLoader.load(name: "bunny", material: 0), materials: [])),
+//            renderer: NormalRenderer()
+//        ), title: "Settings")
+        
         let settings = Expose(wrappedValue: RenderingSettings(
-            scene: SceneManager(scene: .bunnyScene(scale: 3)),
-            renderer: NormalRenderer()
+            camera: RenderingSandbox.defaultCamera,
+//            scene: SceneManager(scene: .boxScene.add(geometry:  try! MeshLoader.load(name: "bunny", material: 6), bvh: []).accelerate()),
+            scene: SceneManager(scene: .bunnyScene()),
+//            renderer: BVHNormalRenderer()
+            renderer: BVHNormalRenderer()
+//            renderer: BVHDirectRenderer()
         ), title: "Settings")
         self._settings = settings
         
-        let texture = Texture(
+        let workingTexture = Texture(
             format: .rgba16Float,
             width: Self.defaultCamera.imageSize.x,
             height: Self.defaultCamera.imageSize.y,
             storageMode: .managed, usage: [.shaderRead, .shaderWrite]
         
         )
-        self.texture = texture
+        self.workingTexture = workingTexture
+        
+        let destinationTexture = Texture(
+            format: .rgba16Float,
+            width: Self.defaultCamera.imageSize.x,
+            height: Self.defaultCamera.imageSize.y,
+            storageMode: .managed, usage: [.shaderRead, .shaderWrite]
+        )
+        self.destinationTexture = destinationTexture
+        
+        let samplers = Buffer<HaltonSampler>(name: "Samplers")
+        self.samplers = samplers
         
         let gpu = GPU.default
         
@@ -50,57 +73,61 @@ struct RenderingSandbox: View {
             ),
             format: .rgba16Float, updateProcedure: .manual) { gpu, drawable, descriptor in
             guard let drawable, let descriptor else { return }
-            try await Self.draw(gpu: gpu, drawable: drawable, descriptor: descriptor, settings: settings.wrappedValue, texture: texture)
+                try await Self.draw(gpu: gpu, drawable: drawable, descriptor: descriptor, settings: settings, workingTexture: workingTexture, destinationTexture: destinationTexture, samplers: samplers)
         }
         
         let view = self.renderingView
+        self.samplers.reset(
+            self.samplers.generate(rng: PRNG(), maxSeed: 1024, count: Self.defaultCamera.imageSize.x * Self.defaultCamera.imageSize.y),
+            usage: .managed
+        )
         Task {
-            try await [texture].clearTexturesKernel(gpu: gpu)
+            try await [workingTexture, destinationTexture].clearTexturesKernel(gpu: gpu)
             
             view.draw()
         }
     }
     
-    @State var t = 0.0
+    @State var t = 0.0//Double.pi / 2
     
     var body: some View {
         GeometryReader { geometry in
             renderingView
                 .focusable()
                 .focused($focused)
-                .gesture(DragGesture(coordinateSpace: .local)
-                    .onChanged { event in
-                        updateCamera(start: event.startLocation, end: event.location, size: geometry.size)
-                    }
-                    .onEnded { event in
-                        updateCamera(start: event.startLocation, end: event.location, size: geometry.size)
-                        camera = tempCamera
-                    }
-                )
-                .onKeyPress(.downArrow) {
-                    print("Down")
-                    return .handled
-                }
-                .onKeyPress(.rightArrow) {
-                    rotate(direction: 1)
-                    return .handled
-                }
-                .onKeyPress(.leftArrow) {
-                    rotate(direction: -1)
-                    return .handled
-                }
-                .onAppear {
-                    print("APP")
-                    renderingView.draw()
-                }
+//                .gesture(DragGesture(coordinateSpace: .local)
+//                    .onChanged { event in
+//                        updateCamera(start: event.startLocation, end: event.location, size: geometry.size)
+//                    }
+//                    .onEnded { event in
+//                        updateCamera(start: event.startLocation, end: event.location, size: geometry.size)
+//                        camera = tempCamera
+//                    }
+//                )
+//                .onKeyPress(.downArrow) {
+//                    print("Down")
+//                    return .handled
+//                }
+//                .onKeyPress(.rightArrow) {
+//                    rotate(direction: 1)
+//                    return .handled
+//                }
+//                .onKeyPress(.leftArrow) {
+//                    rotate(direction: -1)
+//                    return .handled
+//                }
+//                .onAppear {
+//                    print("APP")
+//                    renderingView.draw()
+//                }
                 .onKeyPress(.downArrow) {
                     renderingView.draw()
                     return .handled
                 }
                 .onReceive(timer) { _ in
                     t += 1 / 30
-                    let radius: Float = 2
-                    let o = SIMD3(radius * Float(cos(t)), settings.camera.position.y, radius * Float(sin(t)))
+                    let radius: Float = 3
+                    let o = SIMD3(radius * Float(cos(t)), 0.22, radius * Float(sin(t)))
                     let t = SIMD3<Float>(0, 0.220812, 0)
                     let d = normalize(t - o)
                     
@@ -137,18 +164,25 @@ struct RenderingSandbox: View {
         tempCamera.forward = normalize(c * camera.forward - s * camera.right)
         tempCamera.right = normalize(cross(camera.up, tempCamera.forward))
         
-//        let cy = cos(angles.y)
-//        let sy = sin(angles.y)
-//        tempCamera.forward = normalize(cy * camera.forward - sy * camera.up)
-//        tempCamera.up = normalize(cross(tempCamera.forward, tempCamera.right))
+        let cy = cos(angles.y)
+        let sy = sin(angles.y)
+        tempCamera.forward = normalize(cy * camera.forward - sy * camera.up)
+        tempCamera.up = normalize(cross(tempCamera.forward, tempCamera.right))
         
         settings.camera = tempCamera
         
         renderingView.draw()
     }
     
-    static func draw(gpu: GPU, drawable: MTLDrawable, descriptor: MTLRenderPassDescriptor, settings: RenderingSettings, texture: Texture) async throws {
+    static func draw(gpu: GPU, drawable: MTLDrawable, descriptor: MTLRenderPassDescriptor, settings: Expose<RenderingSettings>, workingTexture: Texture, destinationTexture: Texture, samplers: Buffer<HaltonSampler>) async throws {
 //        settings.scene
+//        if Int.random(in: 0...30) == 0 {
+//            samplers.reset(
+//                samplers.generate(rng: RNG(), maxSeed: 1024, count: samplers.count),
+//                usage: .managed
+//            )
+//        }
+        settings.wrappedValue.samples += 1
         let imageSize = Self.defaultCamera.imageSize
         let rays = Buffer(name: "Rays", count: imageSize.x * imageSize.y, type: ShadingRay.self)
         do {
@@ -157,15 +191,21 @@ struct RenderingSandbox: View {
                 descriptor: descriptor,
                 pass: GPUPass(
                     pass:
-                        [rays.generate(imageSize: SIMD2<UInt32>(UInt32(imageSize.x), UInt32(imageSize.y)), camera: settings.camera, offset: .zero)] +
-                    settings.renderer.renderScene(
+                        [
+                            rays.generate(
+                                imageSize: SIMD2<UInt32>(UInt32(imageSize.x), UInt32(imageSize.y)),
+                                camera: settings.wrappedValue.camera,
+                                offset: settings.wrappedValue.samples <= 1 ? .zero : SIMD2<Float>(Float.random(in: -0.5...0.5), Float.random(in: -0.5...0.5)))
+                        ] +
+                    settings.wrappedValue.renderer.renderScene(
                         gpu: gpu,
-                        camera: settings.camera,
-                        sceneManager: settings.scene,
+                        camera: settings.wrappedValue.camera,
+                        sceneManager: settings.wrappedValue.scene,
                         rays: rays,
-                        texture: texture
+                        samplers: samplers,
+                        texture: workingTexture
                     ) +
-                    [texture.presentFlipped()],
+                    [workingTexture.accumulate(into: destinationTexture, samples: settings.wrappedValue.samples), destinationTexture.presentFlipped()],
                     completion: { gpu in
                         
                     }
@@ -179,9 +219,12 @@ struct RenderingSandbox: View {
 
 extension RenderingSandbox {
     struct RenderingSettings: Exposable {
-        var camera = RenderingSandbox.defaultCamera
-        var scene = SceneManager(scene: .bunnyScene(scale: 3))
-        var renderer = NormalRenderer()
+        var camera: Camera {
+            didSet { samples = 0 }
+        }
+        var scene: SceneManager
+        var renderer: SimpleRenderer
+        var samples = 0
         struct Settings {
             
         }

@@ -26,6 +26,18 @@ extension Texture {
         )
     }
     
+    func accumulate(into: Texture, samples: Int) -> ComputeShader {
+        ComputeShader(
+            function: .accumulateInto,
+            buffers: [Buffer(name: "Samples", [UInt32(samples)], usage: .sparse)],
+            textures: [
+                self,
+                into
+            ],
+            threadGroupSize: MTLSize(width: 8, height: 8, depth: 1)
+        )
+    }
+    
     func presentFlipped(rescale: Float = 2) -> RasterShader {
         RasterShader(
             function: .presentFlipped,
@@ -37,6 +49,7 @@ extension Texture {
 }
 
 extension ComputeFn {
+    static let accumulateInto = ComputeFn(name: "accumulateInto")
     static let generateRays = ComputeFn(name: "generateRays")
 }
 extension Buffer<ShadingRay> {

@@ -10,6 +10,8 @@ import MetalAbstract
 class SceneManager {
     var scene: GeometryScene
     
+    var bvh: Buffer<BoundingBox>?
+    
     var geometry: VoidBuffer
     var geometryTypes: Buffer<GeometryType>
     var objectCount: Buffer<UInt32>
@@ -24,25 +26,32 @@ class SceneManager {
     init(scene: GeometryScene) {
         self.scene = scene
         
+        var primitives = scene.geometry
+        if !scene.bvh.isEmpty {
+            let (boxes, geo) = BVH.compile(scene.bvh, geometryOffset: primitives.map(\.stride).reduce(0, +), geometryCountOffset: primitives.count)
+            primitives.append(contentsOf: geo)
+            self.bvh = Buffer<BoundingBox>(name: "Bounding Boxes", boxes, usage: .managed)
+        }
+        
         geometry = VoidBuffer(
             name: "Geometry",
             future: { gpu in
                 guard let buf = gpu.device.makeBuffer(
-                    length: scene.geometry.map(\.stride).reduce(0, +),
+                    length: primitives.map(\.stride).reduce(0, +),
                     options: .storageModeManaged
                 ) else { return nil }
                 
                 var offset = 0
-                for obj in scene.geometry {
+                for obj in primitives {
                     offset += VoidBuffer.copy(geom: obj, ptr: buf.contents() + offset)
                 }
                 buf.didModifyRange(0..<buf.length)
                 
-                return (buf, scene.geometry.count)
+                return (buf, primitives.count)
         },
             usage: .managed
         )
-        geometryTypes = Buffer(scene.geometry.map(\.geometryType), usage: .managed)
+        geometryTypes = Buffer(primitives.map(\.geometryType), usage: .managed)
         objectCount = Buffer(name: "Object Count", [UInt32(scene.geometry.count)], usage: .managed)
         
         let descriptors: [MaterialDescription] = {

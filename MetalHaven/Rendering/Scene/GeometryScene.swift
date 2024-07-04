@@ -13,6 +13,7 @@ extension DirectionLight: Light {}
 
 struct GeometryScene {
     var lights: [Light]
+    var bvh: [BVH] = []
     var geometry: [any Geometry]
     var materials: [Material]
 }

@@ -126,6 +126,16 @@ void accumulate(uint2 tid [[thread_position_in_grid]],
 }
 
 [[kernel]]
+void accumulateInto(uint2 tid [[thread_position_in_grid]],
+                    texture2d<float, access::read> in,
+                    texture2d<float, access::read_write> out,
+                    constant uint & samples) {
+    float3 r1 = in.read(tid).xyz;
+    float3 r2 = out.read(tid).xyz * float(samples - 1);
+    out.write(float4((r1 + r2) / float(samples), 1), tid);
+}
+
+[[kernel]]
 void intersect(uint tid [[thread_position_in_grid]],
                        device ShadingRay * rays,
                        constant uint & rayCount,

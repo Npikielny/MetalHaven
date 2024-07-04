@@ -39,6 +39,14 @@
 		3045ED422BAFD78C005FE34D /* VisualizeNormals.metal in Sources */ = {isa = PBXBuildFile; fileRef = 3045ED412BAFD78C005FE34D /* VisualizeNormals.metal */; };
 		304892632ADF713100938177 /* ThreadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304892622ADF713100938177 /* ThreadManager.swift */; };
 		3049BD562C2E618900455412 /* IntersectBVH.metal in Sources */ = {isa = PBXBuildFile; fileRef = 3049BD552C2E618900455412 /* IntersectBVH.metal */; };
+		3049BD592C33B67D00455412 /* BVHVisualizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3049BD582C33B67D00455412 /* BVHVisualizer.swift */; };
+		30556CA22C34B50B00CB16D3 /* buddha.obj in Resources */ = {isa = PBXBuildFile; fileRef = 30556CA12C34B50B00CB16D3 /* buddha.obj */; };
+		30556CA42C34B51000CB16D3 /* dragon.obj in Resources */ = {isa = PBXBuildFile; fileRef = 30556CA32C34B51000CB16D3 /* dragon.obj */; };
+		30556CA62C34B81800CB16D3 /* stanfordBunny.obj in Resources */ = {isa = PBXBuildFile; fileRef = 30556CA52C34B81800CB16D3 /* stanfordBunny.obj */; };
+		30556CA82C34B86900CB16D3 /* testObj.obj in Resources */ = {isa = PBXBuildFile; fileRef = 30556CA72C34B86900CB16D3 /* testObj.obj */; };
+		30556CAA2C34B89100CB16D3 /* ajax.obj in Resources */ = {isa = PBXBuildFile; fileRef = 30556CA92C34B89100CB16D3 /* ajax.obj */; };
+		30556CAC2C34BA6700CB16D3 /* dish.obj in Resources */ = {isa = PBXBuildFile; fileRef = 30556CAB2C34BA6700CB16D3 /* dish.obj */; };
+		30556CAE2C34BAF400CB16D3 /* Text.obj in Resources */ = {isa = PBXBuildFile; fileRef = 30556CAD2C34BAF400CB16D3 /* Text.obj */; };
 		305807272ACC65220079B6F4 /* Integrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 305807262ACC65220079B6F4 /* Integrator.swift */; };
 		3058072D2ACC65B10079B6F4 /* ShadingRay.c in Sources */ = {isa = PBXBuildFile; fileRef = 3058072C2ACC65B10079B6F4 /* ShadingRay.c */; };
 		3058072F2ACC65BF0079B6F4 /* Intersection.c in Sources */ = {isa = PBXBuildFile; fileRef = 3058072E2ACC65BF0079B6F4 /* Intersection.c */; };
@@ -64,6 +72,7 @@
 		3069121A2B516E9B00D1EA58 /* DirectEms.swift in Sources */ = {isa = PBXBuildFile; fileRef = 306912192B516E9B00D1EA58 /* DirectEms.swift */; };
 		3069121C2B5289A900D1EA58 /* DirectEms.metal in Sources */ = {isa = PBXBuildFile; fileRef = 3069121B2B5289A900D1EA58 /* DirectEms.metal */; };
 		306912202B533A3200D1EA58 /* LightingSampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3069121F2B533A3200D1EA58 /* LightingSampler.swift */; };
+		306C3F3A2C366E22001FBA90 /* head.obj in Resources */ = {isa = PBXBuildFile; fileRef = 306C3F392C366E22001FBA90 /* head.obj */; };
 		306E147E2B5D9CEF002F6063 /* Bidirectional.swift in Sources */ = {isa = PBXBuildFile; fileRef = 306E147D2B5D9CEF002F6063 /* Bidirectional.swift */; };
 		306E14802B5D9D82002F6063 /* Bidirectional.metal in Sources */ = {isa = PBXBuildFile; fileRef = 306E147F2B5D9D82002F6063 /* Bidirectional.metal */; };
 		30705D332B4FC9E500F1604B /* Lighting.metal in Sources */ = {isa = PBXBuildFile; fileRef = 30705D322B4FC9E500F1604B /* Lighting.metal */; };
@@ -178,6 +187,15 @@
 		3045ED412BAFD78C005FE34D /* VisualizeNormals.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = VisualizeNormals.metal; sourceTree = "<group>"; };
 		304892622ADF713100938177 /* ThreadManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThreadManager.swift; sourceTree = "<group>"; };
 		3049BD552C2E618900455412 /* IntersectBVH.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = IntersectBVH.metal; sourceTree = "<group>"; };
+		3049BD572C2FCBB300455412 /* BVH.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BVH.h; sourceTree = "<group>"; };
+		3049BD582C33B67D00455412 /* BVHVisualizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BVHVisualizer.swift; sourceTree = "<group>"; };
+		30556CA12C34B50B00CB16D3 /* buddha.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = buddha.obj; sourceTree = "<group>"; };
+		30556CA32C34B51000CB16D3 /* dragon.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = dragon.obj; sourceTree = "<group>"; };
+		30556CA52C34B81800CB16D3 /* stanfordBunny.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = stanfordBunny.obj; sourceTree = "<group>"; };
+		30556CA72C34B86900CB16D3 /* testObj.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = testObj.obj; sourceTree = "<group>"; };
+		30556CA92C34B89100CB16D3 /* ajax.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ajax.obj; sourceTree = "<group>"; };
+		30556CAB2C34BA6700CB16D3 /* dish.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = dish.obj; sourceTree = "<group>"; };
+		30556CAD2C34BAF400CB16D3 /* Text.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Text.obj; sourceTree = "<group>"; };
 		305807262ACC65220079B6F4 /* Integrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Integrator.swift; sourceTree = "<group>"; };
 		3058072B2ACC65A40079B6F4 /* Tracing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Tracing.h; sourceTree = "<group>"; };
 		3058072C2ACC65B10079B6F4 /* ShadingRay.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = ShadingRay.c; sourceTree = "<group>"; };
@@ -205,6 +223,7 @@
 		306912192B516E9B00D1EA58 /* DirectEms.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectEms.swift; sourceTree = "<group>"; };
 		3069121B2B5289A900D1EA58 /* DirectEms.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = DirectEms.metal; sourceTree = "<group>"; };
 		3069121F2B533A3200D1EA58 /* LightingSampler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LightingSampler.swift; sourceTree = "<group>"; };
+		306C3F392C366E22001FBA90 /* head.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = head.obj; sourceTree = "<group>"; };
 		306E147A2B5B4073002F6063 /* MetalLighting.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = MetalLighting.hpp; sourceTree = "<group>"; };
 		306E147B2B5B452F002F6063 /* PathTracing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PathTracing.h; sourceTree = "<group>"; };
 		306E147D2B5D9CEF002F6063 /* Bidirectional.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bidirectional.swift; sourceTree = "<group>"; };
@@ -316,7 +335,15 @@
 		30048EA02C2D205A008A6141 /* Objects */ = {
 			isa = PBXGroup;
 			children = (
+				306C3F392C366E22001FBA90 /* head.obj */,
+				30556CAB2C34BA6700CB16D3 /* dish.obj */,
+				30556CA72C34B86900CB16D3 /* testObj.obj */,
+				30556CA52C34B81800CB16D3 /* stanfordBunny.obj */,
+				30556CA32C34B51000CB16D3 /* dragon.obj */,
+				30556CA12C34B50B00CB16D3 /* buddha.obj */,
 				30048EA12C2D2061008A6141 /* bunny.obj */,
+				30556CA92C34B89100CB16D3 /* ajax.obj */,
+				30556CAD2C34BAF400CB16D3 /* Text.obj */,
 			);
 			path = Objects;
 			sourceTree = "<group>";
@@ -325,6 +352,7 @@
 			isa = PBXGroup;
 			children = (
 				30048E9C2C2D1630008A6141 /* BVH.swift */,
+				3049BD572C2FCBB300455412 /* BVH.h */,
 				3049BD552C2E618900455412 /* IntersectBVH.metal */,
 				30048EA42C2D20BB008A6141 /* OBJLoader.swift */,
 				308805912C2D33DD00B2672E /* RenderBVH.swift */,
@@ -533,6 +561,7 @@
 				30652AFE2C1A9553003557CF /* RayDirections.swift */,
 				30652B022C1AA8C8003557CF /* DirectLighting.swift */,
 				30652B002C1A957D003557CF /* SimpleRenderers.metal */,
+				3049BD582C33B67D00455412 /* BVHVisualizer.swift */,
 			);
 			path = SimpleRenderers;
 			sourceTree = "<group>";
@@ -908,8 +937,16 @@
 			buildActionMask = 2147483647;
 			files = (
 				309C23412A52253200BA7B73 /* Preview Assets.xcassets in Resources */,
+				30556CA62C34B81800CB16D3 /* stanfordBunny.obj in Resources */,
+				30556CAE2C34BAF400CB16D3 /* Text.obj in Resources */,
+				30556CA42C34B51000CB16D3 /* dragon.obj in Resources */,
+				30556CAC2C34BA6700CB16D3 /* dish.obj in Resources */,
 				309C233E2A52253200BA7B73 /* Assets.xcassets in Resources */,
 				30048EA22C2D2061008A6141 /* bunny.obj in Resources */,
+				306C3F3A2C366E22001FBA90 /* head.obj in Resources */,
+				30556CAA2C34B89100CB16D3 /* ajax.obj in Resources */,
+				30556CA82C34B86900CB16D3 /* testObj.obj in Resources */,
+				30556CA22C34B50B00CB16D3 /* buddha.obj in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1005,6 +1042,7 @@
 				3096F0D52B4480D200BECC2D /* VoidBufferWrapper.swift in Sources */,
 				30861B472B8BDC7B0070831F /* PMats.swift in Sources */,
 				302D6BC62A6884AC006D62A7 /* Camera.swift in Sources */,
+				3049BD592C33B67D00455412 /* BVHVisualizer.swift in Sources */,
 				30AC515D2BAB527000AA195D /* Metropolis.swift in Sources */,
 				30172EB32B9BA0F700833A4F /* Bidir.swift in Sources */,
 				305807352ACC684D0079B6F4 /* EncodableConformances.swift in Sources */,

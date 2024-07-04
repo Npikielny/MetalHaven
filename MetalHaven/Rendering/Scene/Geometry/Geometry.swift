@@ -7,19 +7,31 @@
 
 import MetalAbstract
 
-protocol Geometry {
+protocol Fitable {
     var centroid:  SIMD3<Float> { get }
+    
+    func fit(boxMin: inout SIMD3<Float>, boxMax: inout SIMD3<Float>)
+    
+//    var primitive: FitablePrimitive { get }
+}
+
+protocol Geometry: Fitable {
     //    var position: SIMD3<Float> { get set }
     var material: Int32 { get set }
     var geometryType: GeometryType { get }
     
     func intersect(ray: Ray) -> Intersection
     //    func sample(sample: SIMD2<Float>) -> (position: SIMD2<Float>, normal: SIMD2<Float>)
-    
-    func fit(boxMin: inout SIMD3<Float>, boxMax: inout SIMD3<Float>)
 }
 
+//enum FitablePrimitive {
+//    case geometry(any Geometry)
+//    case boundingBox(BVH.BoundingVolume)
+//}
+
 extension Geometry {
+//    var primitive: FitablePrimitive { .geometry(self) }
+    
     var stride: Int { Self.stride }
     static var stride: Int {
         MemoryLayout<Self>.stride
@@ -27,10 +39,26 @@ extension Geometry {
     
 }
 
+//extension [Fitable] {
+//    func split() -> (volumes: [BVH.BoundingVolume], geometry: [any Geometry]) {
+//        var volumes = [BVH.BoundingVolume]()
+//        var geometry = [any Geometry]()
+//        
+//        for i in self {
+//            switch i.primitive {
+//                case let .geometry(g): geometry.append(g)
+//                case let .boundingBox(b): volumes.append(b)
+//            }
+//        }
+//        
+//        return (volumes, geometry)
+//    }
+//}
+
 extension Sphere: Geometry, GPUEncodable {
     func fit(boxMin: inout SIMD3<Float>, boxMax: inout SIMD3<Float>) {
         boxMin = min(boxMin, position - size)
-        boxMax = min(boxMax, position + size)
+        boxMax = max(boxMax, position + size)
     }
     
     var centroid: SIMD3<Float> { position }

@@ -253,8 +253,31 @@ extension GeometryScene {
         )
     }()
     
+    static let sphereArrayAccel: GeometryScene = {
+        let side = 5
+        let n = side * side
+        let width: Float = 2 // width of scene
+        let sphereWidth = width / Float(side)
+        let spheres: [Sphere] = (0..<n).map {
+            let x = Float($0 % side)
+            let z = Float($0 / side)
+            return Sphere(
+                position: vector_float3(x + 0.5, 0, z + 0.5) * sphereWidth + vector_float3(-width / 2, 0.5, -width / 2),
+                size: sphereWidth / 2 - 2e-4,
+                material: 6
+            )
+        }
+        
+        return GeometryScene(
+            lights: GeometryScene.boxScene.lights,
+            bvh: [BVH.create(geometry: GeometryScene.emptyRoom.geometry + spheres)],
+            geometry: [],
+            materials: GeometryScene.boxScene.materials
+        )
+    }()
+    
     private static let waterVerts: [[SIMD3<Float>]] = {
-        let s = 40
+        let s = 80
         let height: (Float, Float) -> Float = { sin($0 / 1.5) * sin($1 / 1.2) }
         return (-s/2-1...s/2+1).map { x -> [SIMD3<Float>] in
             let xp = Float(x)

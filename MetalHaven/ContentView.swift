@@ -48,9 +48,14 @@ struct ContentView: View {
 //        }
         
         RenderingSandbox()
-            .onAppear {
-                print("DEPTH: \(BVH.create(geometry: try! MeshLoader.load(name: "bunny", material: 0)).tree.depth())")
-            }
+//            .onAppear {
+//                let loaded = try! MeshLoader.load(name: "bunny", material: 0)
+//                print(loaded.count)
+//                let bvh = BVH.create(geometry: loaded)
+//                print("DEPTH: \(bvh.tree.depth())")
+//                let (box, geo) = BVH.compile([bvh], geometryOffset: 0, geometryCountOffset: 0)
+//                print("Boxes:", box.count, "Geometry:", geo.count, bvh.tree.leafs())
+//            }
         
 //        FluidSim2D(gpu: .default, n: 300, rng: PRNG(), bins: 30)
 //        PathTracingView(
